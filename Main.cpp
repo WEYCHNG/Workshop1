@@ -772,58 +772,6 @@ void TransactionPage(int AccountID)
 
 	}
 }
-/*
-void selectAccToTransaction(string UserId, string account_name)
-{
-	vector <Account> Acc;
-	string disPlayAcc = "";
-	string userid = "";
-
-	User user;
-	Account account;
-	account.UserID = UserId;
-
-	Menu sltAccTrans;
-	sltAccTrans.header = "Your account / wallet";
-	sltAccTrans.addOption("Search account / wallet");
-	sltAccTrans.addOption("Account name: ");
-	sltAccTrans.addOption("Back");
-
-	while (1)
-	{
-		if (disPlayAcc == "") {
-			disPlayAcc = BLUE"\nAccount / Wallet:\n" RESET;
-			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
-
-			for (int i = 0; i < Acc.size(); i++) {
-				tmpString << setw(10) << Acc[i].account_name << "|" << endl;
-			}
-			disPlayAcc += tmpString.str();
-		}
-		sltAccTrans.footer = disPlayAcc;
-
-		switch (sltAccTrans.prompt())
-		{
-		case 1:
-			Acc = Account::toFindAccount(UserId);
-			disPlayAcc = "";
-			break;
-		case 2:
-			cout << "Select account: ";
-			cin >> account.account_name;
-			sltAccTrans.setValue(1, account.account_name);
-
-			break;
-		case 3:
-			return;
-			break;
-		default:
-			break;
-		}
-	}
-}
-*/
 
 void newTrans(int AccountID, string UserId, string account_name)
 {
