@@ -171,29 +171,6 @@ bool Account::confirmtoEdit()
 }
 
 
-vector<Account> Account::toFindAccount(string userid) {
-	string query = "SELECT account_name FROM `account` WHERE UserID=? ";
-
-	DBConnection db;
-	db.prepareStatement(query);
-	db.stmt->setString(1, userid);
-
-	vector<Account> Acc;
-
-	db.QueryResult();
-
-	if (db.res->rowsCount() > 0) {
-
-		while (db.res->next()) {
-			Account tmpAccount(db.res);
-			Acc.push_back(tmpAccount);
-		}
-	}
-
-	db.~DBConnection();
-	return Acc;
-}
-
 
 /*
 Account Account::findAccount(int AccountID) {

@@ -44,6 +44,7 @@ void newTrans(int AccountID, string UserId, string account_name);
 
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
+void selectAccount();//
 //----------------------------------------------------------------------------------------------------//
 
 int main()
@@ -549,6 +550,21 @@ void newAccount(string UserId)
 	}
 }
 
+void selectAccount()
+{
+	vector <Account >Acc;
+	stringstream tmpString;
+	string disPlayAcc;
+	disPlayAcc = BLUE"\nSearch Result:\n" RESET;
+	tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
+
+	for (int i = 0; i < Acc.size(); i++) {
+		tmpString << setw(10) << Acc[i].account_name << "|" << endl;
+	}
+	disPlayAcc += tmpString.str();
+	cout<<disPlayAcc;
+}
+
 void modifyAccountPage(string UserId,string account_name)
 {
 	vector <Account >Acc;
@@ -568,23 +584,12 @@ void modifyAccountPage(string UserId,string account_name)
 
 	while (1)
 	{
-		if (disPlayAcc == "") {
-			disPlayAcc = BLUE"\nSearch Result:\n" RESET;
-			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
-
-			for (int i = 0; i < Acc.size(); i++) {
-				tmpString << setw(10) << Acc[i].account_name << "|" << endl;
-			}
-			disPlayAcc += tmpString.str();
-		}
-		mdfAccPage.footer = disPlayAcc;
+		selectAccount();
 		
 		switch (mdfAccPage.prompt())
 		{
 		case 1:
 			Acc = Account::selectAccount(UserId);
-			disPlayAcc = "";
 			break;
 		case 2:
 			cout << "Enter the account name to edit: ";
@@ -826,7 +831,7 @@ void newTrans(int AccountID, string UserId, string account_name)
 		switch (homeTrans.prompt())
 		{
 		case 1:
-			Acc = Account::toFindAccount(UserId);
+			//Acc = Account::toFindAccount(UserId);
 			disPlayAcc = "";
 			break;
 		case 2:
