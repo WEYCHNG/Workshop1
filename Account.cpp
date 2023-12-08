@@ -177,12 +177,11 @@ double Account::chgeByTrans()
 		double totalExpenses = 0;
 		double totalDeposit = 0;
 		
-
 		DBConnection db;
 		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type");
 		db.QueryResult();
 		string type = db.res->getString("transaction_type");
-		if (db.res->rowsCount() == 1)
+		if (db.res->rowsCount() >= 1)
 		{
 			while (db.res->next())
 			{
@@ -198,30 +197,8 @@ double Account::chgeByTrans()
 			db.~DBConnection();
 			return totalDeposit-totalExpenses;
 		}
-		else
-		{
-			db.~DBConnection();
-		}
 	}
 }
 
-/*
-Account Account::findAccount(int AccountID) {
-	DBConnection db;
-	db.prepareStatement("SELECT account_name FROM product WHERE AccountID=?");
-	db.stmt->setInt(1, AccountID);
-	db.QueryResult();
-
-	Account result;
-	if (db.res->rowsCount() == 1) {
-		while (db.res->next()) {
-			Account found(db.res);
-			result = found;
-		}
-	}
-	db.~DBConnection();
-	return result;
-}
-*/
 
 Account::~Account() {}
