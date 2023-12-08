@@ -557,7 +557,6 @@ void modifyAccountPage(string UserId,string account_name)
 	string disPlayAcc = "";
 	string userid = "";
 
-	//User user;
 	Account account;
 	account.UserID = UserId;
 	
@@ -775,16 +774,8 @@ void TransactionPage(int AccountID)
 	}
 }
 
-void newTrans(int AccountID, string UserId, string account_name)
+void newTrans(Account account,User user,Transaction transaction)
 {
-	vector <Account> Acc;
-	string disPlayAcc = "";
-	string userid = "";
-
-	User user;
-	Account account;
-	account.UserID = UserId;
-
 	Transaction addTrans;
 	bool Expenses = true;
 
@@ -805,31 +796,11 @@ void newTrans(int AccountID, string UserId, string account_name)
 
 	while (1)
 	{
-		if (disPlayAcc == "") {
-			disPlayAcc = BLUE"\nAccount / Wallet:\n" RESET;
-			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
-
-			for (int i = 0; i < Acc.size(); i++) {
-				tmpString << setw(10) << Acc[i].account_name << "|" << endl;
-			}
-			disPlayAcc += tmpString.str();
-		}
-		homeTrans.footer = disPlayAcc;
-
-		if (Expenses) {
-			homeTrans.setValue(0, "Expenses");
-		}
-		else {
-			homeTrans.setValue(0, "Deposit");
-		}
-
 		homeTrans.header = "Add Transaction";
 		switch (homeTrans.prompt())
 		{
 		case 1:
-			Acc = Account::selectAccount(UserId);
-			disPlayAcc = "";
+			modifyAccountPage(account.UserID,account.account_name);
 			break;
 		case 2:
 			cout << "Select account: ";

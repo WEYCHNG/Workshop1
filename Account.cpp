@@ -12,8 +12,8 @@ Account::Account()
 }
 
 
-void Account::addAccount() {
-	
+void Account::addAccount()
+{
 	DBConnection db;
 	
 	db.prepareStatement("Insert into account (UserID,account_name,budget_amount,balance,start_date,end_date) VALUES (?,?,?,?,?,?)");
@@ -28,8 +28,8 @@ void Account::addAccount() {
 
 }
 
-void Account::update() {
-
+void Account::update() 
+{
 	DBConnection db;
 	db.prepareStatement("UPDATE account SET budget_amount=?,balance=?, start_date=?, end_date=? WHERE UserID=? AND account_name=?");
 	db.stmt->setDouble(1, budget_amount);
@@ -62,16 +62,16 @@ Account::Account(sql::ResultSet* data)//retrieve data from database
 }
 
 
-vector<Account> Account::findAccount(string userid,string sortColumn,bool ascending) {
-
-	
+vector<Account> Account::findAccount(string userid,string sortColumn,bool ascending) 
+{
 	string query = "SELECT account_name,budget_amount,balance,start_date,end_date FROM `account` WHERE UserID=?"
 		" ORDER BY "+sortColumn;
 
 	if (ascending) {
 		query += " ASC";
 	}
-	else {
+	else
+	{
 		query += " DESC";
 	}
 
@@ -79,19 +79,18 @@ vector<Account> Account::findAccount(string userid,string sortColumn,bool ascend
 	db.prepareStatement(query);
 	db.stmt->setString(1,userid);
 	
-	
 	vector<Account> accounts;
 
 	db.QueryResult();
 
 	if (db.res->rowsCount() > 0) {
 
-		while (db.res->next()) {
+		while (db.res->next()) 
+		{
 			Account tmpProduct(db.res);
 			accounts.push_back(tmpProduct);
 		}
 	}
-
 	db.~DBConnection();
 	return accounts;
 }
@@ -109,12 +108,12 @@ vector<Account> Account::selectAccount(string userid) {
 
 	if (db.res->rowsCount() > 0) {
 
-		while (db.res->next()) {
+		while (db.res->next()) 
+		{
 			Account tmpAccount(db.res);
 			Acc.push_back(tmpAccount);
 		}
 	}
-
 	db.~DBConnection();
 	return Acc;
 }
@@ -127,20 +126,17 @@ double Account::totalAmount()
 	db.QueryResult();
 	if (db.res->rowsCount() == 1)
 	{
-		while (db.res->next()) {
+		while (db.res->next())
+		{
 			balance = db.res->getDouble("balance");
-		
 		}
-
 		db.~DBConnection();
 		return balance;
 	}
-	else {
-
+	else 
+	{
 		db.~DBConnection();
-	
 	}
-	
 }
 
 
@@ -163,14 +159,51 @@ bool Account::confirmtoEdit()
 		db.~DBConnection();
 		return true;
 	}
-	else {
-
+	else 
+	{
 		db.~DBConnection();
 		return false;
 	}
 }
 
+double Account::chgeByTrans()
+{
+	if (AccountID == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		double totalExpenses = 0;
+		double totalDeposit = 0;
+		
 
+		DBConnection db;
+		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type");
+		db.QueryResult();
+		string type = db.res->getString("transaction_type");
+		if (db.res->rowsCount() == 1)
+		{
+			while (db.res->next())
+			{
+				if (type == "Deposit")
+				{
+					totalDeposit = db.res->getDouble("transaction_amount");
+				}
+				else if (type == "Expenses")
+				{
+					totalExpenses= db.res->getDouble("transaction_amount");
+				}
+			}
+			db.~DBConnection();
+			return totalDeposit-totalExpenses;
+		}
+		else
+		{
+			db.~DBConnection();
+		}
+	}
+}
 
 /*
 Account Account::findAccount(int AccountID) {

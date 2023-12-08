@@ -16,6 +16,7 @@ public:
 	Account(); // constructor method
 	Account(sql::ResultSet* data);
 
+
 	static vector<Account> findAccount(string userid,string sortColumn, bool ascending);
 	static vector<Account> selectAccount(string userid);
 	//static Account findAccount(int AccountID);
@@ -24,6 +25,7 @@ public:
 	void update();
 	void removeAccount();
 	double totalAmount();
+	double chgeByTrans();
 
 	~Account();
 };
