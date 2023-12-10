@@ -178,7 +178,8 @@ double Account::chgeByTrans()
 		double totalDeposit = 0;
 		
 		DBConnection db;
-		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type");
+		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type WHERE AccountID=?");
+		db.stmt->setInt(1, AccountID);
 		db.QueryResult();
 		string type = db.res->getString("transaction_type");
 		if (db.res->rowsCount() >= 1)

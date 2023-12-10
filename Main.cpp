@@ -36,9 +36,9 @@ void modifyAccountPage(string UserID,string account_name);//select accout to mod
 void modifyAccount(Account account); //only need userid and accountname
 
 //Transaction table
-void TransactionPage();
+void TransactionPage(Transaction transaction);
 //void selectAccToTransaction(string UserId, string account_name);
-void newTrans(int AccountID, string UserId, string account_name);
+void newTrans(Account account, Transaction transaction);
 
 
 
@@ -200,12 +200,13 @@ void loginMenu()
 void UserPage(User user) 
 {
 	Account account;
+	Transaction transaction;
 	account.UserID = user.UserId;//pass value of UserID into account table
 
 	Menu homeMenu;
 	homeMenu.addOption("Profile");
 	homeMenu.addOption("Account");
-	homeMenu.addOption("Transaction");// no very good in here
+	homeMenu.addOption("Transaction");
 	homeMenu.addOption("Analysis and Report");
 	homeMenu.addOption("Logout");
 	
@@ -232,9 +233,11 @@ void UserPage(User user)
 			AccountPage(user.UserId);
 			break;
 		case 3:
-			//TransactionPage();
+			TransactionPage(transaction);
+			break;
 		case 4:
 			//Analysis
+			break;
 		case 5:
 			return;
 			break;
@@ -326,6 +329,7 @@ User profile(User user) {
 void AccountPage(string UserId)
 {
 	Account account;
+	Transaction transaction;
 	vector<Account> accounts;
 	string displayString = "";
 	string sortColumn = "account_name";
@@ -549,8 +553,6 @@ void newAccount(string UserId)
 	}
 }
 
-
-
 void modifyAccountPage(string UserId,string account_name)
 {
 	vector <Account >Acc;
@@ -734,10 +736,9 @@ void modifyAccount(Account account)
 }
 
 //TRANSACTION PAGE
-void TransactionPage(int AccountID)
+void TransactionPage(Transaction transaction)
 {
 	Account account;
-	Transaction trans;
 
 	//trans.AccountID = account.AccountID;
 	//AccountID = trans.AccountID;
@@ -754,8 +755,7 @@ void TransactionPage(int AccountID)
 		switch (transPage.prompt())
 		{
 		case 1:
-			//newTrans(AccountID);
-			
+			newTrans(account, transaction);
 			break;
 		case 2:
 			//Edit transaction
@@ -774,21 +774,20 @@ void TransactionPage(int AccountID)
 	}
 }
 
-void newTrans(Account account,User user,Transaction transaction)
+void newTrans(Account account,Transaction transaction)
 {
 	Transaction addTrans;
 	bool Expenses = true;
 
 	Menu homeTrans;
 	homeTrans.addOption("Search account / wallet");//1
-	homeTrans.addOption("Account name: ");//2
-	homeTrans.addOption("Type of transaction: ");//3
-	homeTrans.addOption("Amount of transaction: ");//4
-	homeTrans.addOption("Category: ");//5
-	homeTrans.addOption("Description: ");//6
-	homeTrans.addOption("New balance: ");//7
-	homeTrans.addOption("Confirm");//8
-	homeTrans.addOption("Back to transaction page ");//9
+	homeTrans.addOption("Type of transaction: ");//2
+	homeTrans.addOption("Amount of transaction: ");//3
+	homeTrans.addOption("Category: ");//4
+	homeTrans.addOption("Description: ");//5
+	homeTrans.addOption("New balance: ");//6
+	homeTrans.addOption("Confirm");//7
+	homeTrans.addOption("Back to transaction page ");//8
 
 	string formattedTransAmount;
 	string formattednewBalance;
@@ -803,32 +802,34 @@ void newTrans(Account account,User user,Transaction transaction)
 			modifyAccountPage(account.UserID,account.account_name);
 			break;
 		case 2:
-			cout << "Select account: ";
-			cin >> account.account_name;
-			homeTrans.setValue(1, account.account_name);
-		case 3:
 			cout << "Select Deposit or Expenses: ";
 			Expenses = !Expenses;
 			if (transType == "Expenses") {
 				transType = "Deposit";
+				addTrans.transaction_type = transType;
+				homeTrans.setValue(2, addTrans.transaction_type);
 			}
 			else {
 				transType = "Expenses";
+				addTrans.transaction_type = transType;
+				homeTrans.setValue(2, addTrans.transaction_type);
 			}
-			addTrans.transaction_type = transType;
-			homeTrans.setValue(2, addTrans.transaction_type);
-		case 4:
+			
+
+			cout << "\nUserID" << account.UserID;
+			cout << "\nAccountID" << account.AccountID;
+		case 3:
 			cout << "Enter amount: RM";
 			cin >> addTrans.transaction_amount;
 			formattedTransAmount = formatAmount(addTrans.transaction_amount);
 			homeTrans.setValue(3, formattedTransAmount);
 			break;
-		case 5:
+		case 4:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
 			cin >> addTrans.description;
 			homeTrans.setValue(4, addTrans.description);
 			break;
-		case 6:
+		case 5:
 			cout << "Description: ";
 			if (addTrans.transaction_type == "Expenses")
 			{
@@ -840,29 +841,13 @@ void newTrans(Account account,User user,Transaction transaction)
 				addTrans.description = "NULL";
 				homeTrans.setValue(5, addTrans.description);
 			}
+		case 6:
+			account.chgeByTrans();
+			break;
 		case 7:
-			//has some problem
-			if (account.AccountID == addTrans.AccountID)
-			{
-				if (addTrans.transaction_type == "Deposit")
-				{
-					addTrans.newbalance = account.balance + addTrans.transaction_amount;
-					formattednewBalance = formatAmount(addTrans.newbalance);
-					homeTrans.setValue(5, formattednewBalance);
-				}
-				else if (addTrans.transaction_type == "Expenses")
-				{
-					addTrans.newbalance = account.balance - addTrans.transaction_amount;
-					formattednewBalance = formatAmount(addTrans.newbalance);
-					homeTrans.setValue(5, formattednewBalance);
-				}
-			}
-			break;
-		case 8:
 			addTrans.addTrans();
-		case 9:
+		case 8:
 			return;
-			break;
 			break;
 		default:
 			break;
