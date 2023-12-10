@@ -32,7 +32,7 @@ User profile(User user);
 //Account table
 void AccountPage(string UserId);
 void newAccount(string UserId);//Add account
-void modifyAccountPage(string UserID,string account_name);//select accout to modify
+void modifyAccountPage(string confirmation,string UserID,string account_name);//select accout to modify and select account to make transaction
 void modifyAccount(Account account); //only need userid and accountname
 
 //Transaction table
@@ -335,6 +335,7 @@ void AccountPage(string UserId)
 	string sortColumn = "account_name";
 	string userid="";
 	bool ascending = true;
+	string confirmation;
 
 	Menu homeAccount;
 	homeAccount.header = "Search Option";
@@ -405,7 +406,8 @@ void AccountPage(string UserId)
 			newAccount(UserId);
 			break;
 		case 5:
-			modifyAccountPage(UserId, account.account_name);
+			confirmation = "ConfirmEdit";
+			modifyAccountPage(confirmation,UserId, account.account_name);
 			break;
 		case 6:
 			return;
@@ -553,7 +555,7 @@ void newAccount(string UserId)
 	}
 }
 
-void modifyAccountPage(string UserId,string account_name)
+void modifyAccountPage(string confirmation,string UserId,string account_name)
 {
 	vector <Account >Acc;
 	string disPlayAcc = "";
@@ -593,15 +595,19 @@ void modifyAccountPage(string UserId,string account_name)
 			cout << "Enter the account name to edit: ";
 			cin >>account.account_name;
 			mdfAccPage.setValue(1,account.account_name);
-
 			break;
 		case 3:
-			if (account.confirmtoEdit()) {
-				modifyAccount(account);
-			}
-			else {
-				cout << RED << "\tInvalid account !" << CYAN << " Please press enter to continues..." << RESET;
-				_getch();
+			if(confirmation=="ConfirmEdit")
+				if (account.confirmtoEdit()) {
+					modifyAccount(account);
+				}
+				else {
+					cout << RED << "\tInvalid account !" << CYAN << " Please press enter to continues..." << RESET;
+					_getch();
+				}
+			else if (confirmation == "ConfirmAdd")
+			{
+				account.account_name;
 			}
 			break;
 		case 4:
@@ -779,6 +785,11 @@ void newTrans(Account account,Transaction transaction)
 
 	Transaction addTrans;
 	bool Expenses = true;
+	string UserId;
+	string account_name;
+	account_name = account.account_name;
+	UserId = account.AccountID;
+
 
 	Menu homeTrans;
 	homeTrans.addOption("Search account / wallet");//1
@@ -793,34 +804,32 @@ void newTrans(Account account,Transaction transaction)
 	string formattedTransAmount;
 	string formattednewBalance;
 	string transType;
+	string confirmation;
+	string accountName;
 
 	while (1)
 	{
 		if (Expenses) {
-			homeTrans.setValue(2, "Expenses");
+			homeTrans.setValue(1, "Expenses");
+			addTrans.transaction_type = transType;
 		}
 		else {
-			homeTrans.setValue(2, "Deposit");
+			homeTrans.setValue(1, "Deposit");
+			addTrans.transaction_type = transType;
 		}
 
 		homeTrans.header = "Add Transaction";
 		switch (homeTrans.prompt())
 		{
 		case 1:
-			modifyAccountPage(account.UserID,account.account_name);
+			
+			confirmation = "ConfirmAdd";
+			modifyAccountPage(confirmation,UserId, account_name);
+			homeTrans.setValue(0,account.account_name);
+			// cannot use this modifyAccountPgae because no need to edit anything 
 			break;
 		case 2:
 			Expenses = !Expenses;
-			if (transType == "Expenses") {
-				transType = "Deposit";
-				addTrans.transaction_type = transType;
-				homeTrans.setValue(2, addTrans.transaction_type);
-			}
-			else {
-				transType = "Expenses";
-				addTrans.transaction_type = transType;
-				homeTrans.setValue(2, addTrans.transaction_type);
-			}
 			break;
 		case 3:
 			cout << "Enter amount: RM";

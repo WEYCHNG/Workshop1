@@ -29,14 +29,13 @@ Transaction::Transaction(sql::ResultSet* data)
 void Transaction::addTrans()
 {
 	DBConnection db;
-	db.prepareStatement("INSERT INTO transaction (TransactionID,description,category,transaction_type,transaction_amount,transaction_date,newbalance) VALUES (?,?,?,?,?,?,?)");
+	db.prepareStatement("INSERT INTO transaction (TransactionID,description,category,transaction_type,transaction_amount,newbalance) VALUES (?,?,?,?,?,?)");
 	db.stmt->setInt(1, TransactionID);
 	db.stmt->setString(2, description);
 	db.stmt->setString(3, category);
 	db.stmt->setString(4, transaction_type);
 	db.stmt->setDouble(5, transaction_amount);
-	db.stmt->setString(6, transaction_date);
-	db.stmt->setDouble(7, newbalance);
+	db.stmt->setDouble(6, newbalance);
 	db.QueryStatement();
 	AccountID = db.getGeneratedId();
 
