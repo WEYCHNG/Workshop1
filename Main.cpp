@@ -562,7 +562,6 @@ void modifyAccountPage(string confirmation,string UserId,string account_name)
 	string userid = "";
 
 	Account account;
-	account.UserID = UserId;
 	
 	Menu mdfAccPage;
 	mdfAccPage.header = "Your account / wallet";
@@ -607,7 +606,7 @@ void modifyAccountPage(string confirmation,string UserId,string account_name)
 				}
 			else if (confirmation == "ConfirmAdd")
 			{
-				account.account_name;
+				account.getAccount();
 			}
 			break;
 		case 4:
@@ -776,7 +775,6 @@ void TransactionPage(Transaction transaction)
 			break;
 
 		}
-
 	}
 }
 
@@ -784,15 +782,18 @@ void newTrans(Account account,Transaction transaction)
 {
 
 	Transaction addTrans;
+
 	bool Expenses = true;
 	string UserId;
 	string account_name;
+
+
 	account_name = account.account_name;
-	UserId = account.AccountID;
+	UserId = account.UserID;
 
 
 	Menu homeTrans;
-	homeTrans.addOption("Search account / wallet");//1
+	homeTrans.addOption("Search and select account / wallet: ");//1
 	homeTrans.addOption("Type of transaction: ");//2
 	homeTrans.addOption("Amount of transaction: ");//3
 	homeTrans.addOption("Category: ");//4
@@ -822,9 +823,8 @@ void newTrans(Account account,Transaction transaction)
 		switch (homeTrans.prompt())
 		{
 		case 1:
-			
 			confirmation = "ConfirmAdd";
-			modifyAccountPage(confirmation,UserId, account_name);
+			modifyAccountPage(confirmation,UserId,account_name);
 			homeTrans.setValue(0,account.account_name);
 			// cannot use this modifyAccountPgae because no need to edit anything 
 			break;

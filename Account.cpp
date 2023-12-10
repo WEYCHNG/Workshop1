@@ -139,7 +139,6 @@ double Account::totalAmount()
 	}
 }
 
-
 bool Account::confirmtoEdit()
 {
 	DBConnection db;
@@ -201,5 +200,25 @@ double Account::chgeByTrans()
 	}
 }
 
-
+void Account::getAccount()
+{
+	DBConnection db;
+	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND account_name=?");
+	db.stmt->setString(1, UserID);
+	db.stmt->setString(2, account_name);
+	db.QueryResult();
+	if (db.res->rowsCount() >= 1)
+	{
+		while (db.res->next()) {
+			account_name = db.res->getString("account_name");
+			balance = db.res->getDouble("balance");
+			budget_amount = db.res->getDouble("budget_amount");
+		}
+		db.~DBConnection();
+	}
+	else
+	{
+		db.~DBConnection();
+	}
+}
 Account::~Account() {}

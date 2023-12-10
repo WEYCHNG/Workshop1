@@ -24,6 +24,7 @@ public:
 	void addAccount();
 	void update();
 	void removeAccount();
+	void getAccount();
 	double totalAmount();
 	double chgeByTrans();
 
