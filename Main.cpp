@@ -36,9 +36,9 @@ void modifyAccountPage(string confirmation,string UserID,string account_name);//
 void modifyAccount(Account account); //only need userid and accountname
 
 //Transaction table
-void TransactionPage(Transaction transaction);
+void TransactionPage(string UserId);
 //void selectAccToTransaction(string UserId, string account_name);
-void newTrans(Account account, Transaction transaction);
+void newTrans(string UserId,string account_name);
 
 
 
@@ -180,7 +180,7 @@ void loginMenu()
 			break;
 		case 3:
 			if (user.login()) {
-				UserPage(user);
+				UserPage(user);//UserId and password store in UserPage
 			}
 			else {
 				cout << RED <<"\tInvalid Login !"<< CYAN <<" Please press enter to continues..."<<RESET;
@@ -201,7 +201,7 @@ void UserPage(User user)
 {
 	Account account;
 	Transaction transaction;
-	account.UserID = user.UserId;//pass value of UserID into account table
+	account.UserID = user.UserId;//pass value of UserID into account table,so can get data from account table
 
 	Menu homeMenu;
 	homeMenu.addOption("Profile");
@@ -233,7 +233,7 @@ void UserPage(User user)
 			AccountPage(user.UserId);
 			break;
 		case 3:
-			TransactionPage(transaction);
+			TransactionPage(user.UserId);
 			break;
 		case 4:
 			//Analysis
@@ -606,7 +606,7 @@ void modifyAccountPage(string confirmation,string UserId,string account_name)
 				}
 			else if (confirmation == "ConfirmAdd")
 			{
-				account.getAccount();
+				newTrans(UserId, account.account_name);
 			}
 			break;
 		case 4:
@@ -741,12 +741,9 @@ void modifyAccount(Account account)
 }
 
 //TRANSACTION PAGE
-void TransactionPage(Transaction transaction)
+void TransactionPage(string UserId)
 {
 	Account account;
-
-	//trans.AccountID = account.AccountID;
-	//AccountID = trans.AccountID;
 
 	Menu transPage;
 	transPage.header = "Transaction Page";
@@ -760,7 +757,7 @@ void TransactionPage(Transaction transaction)
 		switch (transPage.prompt())
 		{
 		case 1:
-			newTrans(account, transaction);
+			newTrans(UserId,account.account_name);
 			break;
 		case 2:
 			//Edit transaction
@@ -778,19 +775,16 @@ void TransactionPage(Transaction transaction)
 	}
 }
 
-void newTrans(Account account,Transaction transaction)
+void newTrans(string UserID, string account_name)
 {
-
 	Transaction addTrans;
+	Account account;
 
 	bool Expenses = true;
 	string UserId;
-	string account_name;
-
-
-	account_name = account.account_name;
-	UserId = account.UserID;
-
+	
+	account.UserID = UserID;
+	account.account_name = account_name;
 
 	Menu homeTrans;
 	homeTrans.addOption("Search and select account / wallet: ");//1
@@ -824,7 +818,9 @@ void newTrans(Account account,Transaction transaction)
 		{
 		case 1:
 			confirmation = "ConfirmAdd";
-			modifyAccountPage(confirmation,UserId,account_name);
+			modifyAccountPage(confirmation,UserID,account_name);
+			account.getAccount();
+			account.account_name = account_name;
 			homeTrans.setValue(0,account.account_name);
 			// cannot use this modifyAccountPgae because no need to edit anything 
 			break;
@@ -855,7 +851,11 @@ void newTrans(Account account,Transaction transaction)
 				homeTrans.setValue(5, addTrans.description);
 			}
 		case 6:
-			account.chgeByTrans();
+			cout << "\nAccount Name" << account.account_name;
+			cout << "\naccount Name" << account_name;
+			cout << "\nBudget " << account.budget_amount;
+			cout << "\nBalance " << account.balance;
+			//account.chgeByTrans();
 			break;
 		case 7:
 			addTrans.addTrans();

@@ -87,8 +87,8 @@ vector<Account> Account::findAccount(string userid,string sortColumn,bool ascend
 
 		while (db.res->next()) 
 		{
-			Account tmpProduct(db.res);
-			accounts.push_back(tmpProduct);
+			Account tmpAccount(db.res);
+			accounts.push_back(tmpAccount);
 		}
 	}
 	db.~DBConnection();
@@ -207,7 +207,7 @@ void Account::getAccount()
 	db.stmt->setString(1, UserID);
 	db.stmt->setString(2, account_name);
 	db.QueryResult();
-	if (db.res->rowsCount() >= 1)
+	if (db.res->rowsCount() > 0)
 	{
 		while (db.res->next()) {
 			account_name = db.res->getString("account_name");
@@ -221,4 +221,5 @@ void Account::getAccount()
 		db.~DBConnection();
 	}
 }
+
 Account::~Account() {}
