@@ -776,6 +776,7 @@ void TransactionPage(Transaction transaction)
 
 void newTrans(Account account,Transaction transaction)
 {
+
 	Transaction addTrans;
 	bool Expenses = true;
 
@@ -795,6 +796,13 @@ void newTrans(Account account,Transaction transaction)
 
 	while (1)
 	{
+		if (Expenses) {
+			homeTrans.setValue(2, "Expenses");
+		}
+		else {
+			homeTrans.setValue(2, "Deposit");
+		}
+
 		homeTrans.header = "Add Transaction";
 		switch (homeTrans.prompt())
 		{
@@ -802,7 +810,6 @@ void newTrans(Account account,Transaction transaction)
 			modifyAccountPage(account.UserID,account.account_name);
 			break;
 		case 2:
-			cout << "Select Deposit or Expenses: ";
 			Expenses = !Expenses;
 			if (transType == "Expenses") {
 				transType = "Deposit";
@@ -814,10 +821,7 @@ void newTrans(Account account,Transaction transaction)
 				addTrans.transaction_type = transType;
 				homeTrans.setValue(2, addTrans.transaction_type);
 			}
-			
-
-			cout << "\nUserID" << account.UserID;
-			cout << "\nAccountID" << account.AccountID;
+			break;
 		case 3:
 			cout << "Enter amount: RM";
 			cin >> addTrans.transaction_amount;
