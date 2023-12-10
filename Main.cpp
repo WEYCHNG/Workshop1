@@ -32,7 +32,7 @@ User profile(User user);
 //Account table
 void AccountPage(string UserId);
 void newAccount(string UserId);//Add account
-void modifyAccountPage(string confirmation,string UserID,string account_name);//select accout to modify and select account to make transaction
+void modifyAccountPage(string confirmation,string UserID);//select accout to modify and select account to make transaction
 void modifyAccount(Account account); //only need userid and accountname
 
 //Transaction table
@@ -407,7 +407,7 @@ void AccountPage(string UserId)
 			break;
 		case 5:
 			confirmation = "ConfirmEdit";
-			modifyAccountPage(confirmation,UserId, account.account_name);
+			modifyAccountPage(confirmation,UserId);
 			break;
 		case 6:
 			return;
@@ -555,7 +555,7 @@ void newAccount(string UserId)
 	}
 }
 
-void modifyAccountPage(string confirmation,string UserId,string account_name)
+void modifyAccountPage(string confirmation,string UserId)
 {
 	vector <Account >Acc;
 	string disPlayAcc = "";
@@ -743,8 +743,7 @@ void modifyAccount(Account account)
 //TRANSACTION PAGE
 void TransactionPage(string UserId)
 {
-	Account account;
-
+	string confirmation;
 	Menu transPage;
 	transPage.header = "Transaction Page";
 	transPage.addOption("Create transaction");//Add transaction depend UserID 
@@ -757,7 +756,8 @@ void TransactionPage(string UserId)
 		switch (transPage.prompt())
 		{
 		case 1:
-			newTrans(UserId,account.account_name);
+			confirmation = "ConfirmAdd";
+			modifyAccountPage(confirmation, UserId);
 			break;
 		case 2:
 			//Edit transaction
@@ -804,6 +804,8 @@ void newTrans(string UserID, string account_name)
 
 	while (1)
 	{
+		homeTrans.setValue(0, account_name);
+		account.getAccount(UserID, account_name);
 		if (Expenses) {
 			homeTrans.setValue(1, "Expenses");
 			addTrans.transaction_type = transType;
@@ -818,43 +820,41 @@ void newTrans(string UserID, string account_name)
 		{
 		case 1:
 			confirmation = "ConfirmAdd";
-			modifyAccountPage(confirmation,UserID,account_name);
-			account.getAccount();
-			account.account_name = account_name;
-			homeTrans.setValue(0,account.account_name);
-			// cannot use this modifyAccountPgae because no need to edit anything 
+			modifyAccountPage(confirmation,UserID);
 			break;
 		case 2:
 			Expenses = !Expenses;
 			break;
-		case 3:
+		case 3://not done yet
 			cout << "Enter amount: RM";
 			cin >> addTrans.transaction_amount;
 			formattedTransAmount = formatAmount(addTrans.transaction_amount);
-			homeTrans.setValue(3, formattedTransAmount);
+			homeTrans.setValue(2, formattedTransAmount);
 			break;
 		case 4:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
 			cin >> addTrans.description;
-			homeTrans.setValue(4, addTrans.description);
+			homeTrans.setValue(3, addTrans.description);
 			break;
 		case 5:
 			cout << "Description: ";
 			if (addTrans.transaction_type == "Expenses")
 			{
 				cin >> addTrans.description;
-				homeTrans.setValue(5, addTrans.description);
+				homeTrans.setValue(4, addTrans.description);
 			}
 			else
 			{
 				addTrans.description = "NULL";
-				homeTrans.setValue(5, addTrans.description);
+				homeTrans.setValue(4, addTrans.description);
 			}
 		case 6:
+			cout << "UserID" << account.UserID;
 			cout << "\nAccount Name" << account.account_name;
-			cout << "\naccount Name" << account_name;
+			
 			cout << "\nBudget " << account.budget_amount;
 			cout << "\nBalance " << account.balance;
+			cout << "\nAccountID" << account.AccountID;
 			//account.chgeByTrans();
 			break;
 		case 7:

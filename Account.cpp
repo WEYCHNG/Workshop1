@@ -200,10 +200,10 @@ double Account::chgeByTrans()
 	}
 }
 
-void Account::getAccount()
+void Account::getAccount(string UserID,string account_name)
 {
 	DBConnection db;
-	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND account_name=?");
+	db.prepareStatement("SELECT AccountID,account_name,budget_amount,balance FROM account WHERE UserID=? AND account_name=?");
 	db.stmt->setString(1, UserID);
 	db.stmt->setString(2, account_name);
 	db.QueryResult();
@@ -211,6 +211,7 @@ void Account::getAccount()
 	{
 		while (db.res->next()) {
 			account_name = db.res->getString("account_name");
+			AccountID = db.res->getInt("AccountID");
 			balance = db.res->getDouble("balance");
 			budget_amount = db.res->getDouble("budget_amount");
 		}

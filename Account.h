@@ -24,7 +24,7 @@ public:
 	void addAccount();
 	void update();
 	void removeAccount();
-	void getAccount();
+	void getAccount(string UserId,string account_name);
 	double totalAmount();
 	double chgeByTrans();
 
