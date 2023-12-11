@@ -37,6 +37,38 @@ void Transaction::addTrans()
 	db.stmt->setDouble(6, newbalance);
 	db.QueryStatement();
 	AccountID = db.getGeneratedId();
-
 }
 
+
+vector<Transaction> findTrans(int AccountID,string sortColumn, bool ascending)
+{
+	string query = "SELECT account_name,transaction_type,transaction_amount,newbalance,transaction_date, FROM `account`,'transaction' "
+		"WHERE account.AccountID = transaction.AccountID=? "
+		"ORDER BY" + sortColumn;
+	if (ascending) {
+		query += " ASC";
+	}
+	else
+	{
+		query += " DESC";
+	}
+
+	DBConnection db;
+	db.prepareStatement(query);
+	db.stmt->setInt(1, AccountID);
+
+	vector<Transaction> trans;
+
+	db.QueryResult();
+
+	if (db.res->rowsCount() > 0) {
+
+		while (db.res->next())
+		{
+			Transaction tmpTrans(db.res);
+			trans.push_back(tmpTrans);
+		}
+	}
+	db.~DBConnection();
+	return trans;
+}

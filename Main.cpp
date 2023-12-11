@@ -762,7 +762,7 @@ void TransactionPage(string UserId)
 			modifyAccountPage(confirmation, UserId);
 			break;
 		case 2:
-			//Edit transaction
+			
 			break;
 		case 3:
 			//Serach transaction
