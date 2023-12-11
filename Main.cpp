@@ -787,17 +787,19 @@ void newTrans(string UserID, string account_name)
 	account.account_name = account_name;
 
 	Menu homeTrans;
-	homeTrans.addOption("Search and select account / wallet: ");//1
-	homeTrans.addOption("Type of transaction: ");//2
-	homeTrans.addOption("Amount of transaction: ");//3
-	homeTrans.addOption("Category: ");//4
-	homeTrans.addOption("Description: ");//5
-	homeTrans.addOption("New balance: ");//6
-	homeTrans.addOption("Confirm");//7
-	homeTrans.addOption("Back to transaction page ");//8
+	homeTrans.addOption("Search and select account / wallet");//1
+	homeTrans.addOption("Type of transaction");//2
+	homeTrans.addOption("Amount of transaction");//3
+	homeTrans.addOption("Category");//4
+	homeTrans.addOption("Description");//5
+	homeTrans.addOption("New balance");//6
+	homeTrans.addOption("New budget amount");//7
+	homeTrans.addOption("Confirm");//8
+	homeTrans.addOption("Back to transaction page");//9
 
 	string formattedTransAmount;
 	string formattednewBalance;
+	string formattednewBudgetAmount;
 	string transType;
 	string confirmation;
 	string accountName;
@@ -807,12 +809,14 @@ void newTrans(string UserID, string account_name)
 		homeTrans.setValue(0, account_name);
 		account.getAccount(UserID, account_name);
 		if (Expenses) {
-			homeTrans.setValue(1, "Expenses");
-			addTrans.transaction_type = transType;
+			addTrans.transaction_type = "Expenses";
+			homeTrans.setValue(1, addTrans.transaction_type);
+			
 		}
 		else {
-			homeTrans.setValue(1, "Deposit");
-			addTrans.transaction_type = transType;
+			addTrans.transaction_type ="Deposit";
+			homeTrans.setValue(1, addTrans.transaction_type);
+			
 		}
 
 		homeTrans.header = "Add Transaction";
@@ -843,24 +847,40 @@ void newTrans(string UserID, string account_name)
 				cin >> addTrans.description;
 				homeTrans.setValue(4, addTrans.description);
 			}
-			else
+			else if(addTrans.transaction_type == "Deposit")
 			{
 				addTrans.description = "NULL";
 				homeTrans.setValue(4, addTrans.description);
 			}
 		case 6:
-			cout << "UserID" << account.UserID;
-			cout << "\nAccount Name" << account.account_name;
-			
-			cout << "\nBudget " << account.budget_amount;
-			cout << "\nBalance " << account.balance;
-			cout << "\nAccountID" << account.AccountID;
-			//account.chgeByTrans();
+			if (addTrans.transaction_type == "Expenses")
+			{
+				addTrans.newbalance = account.balance- addTrans.transaction_amount;
+				formattednewBalance = formatAmount(addTrans.newbalance);
+				homeTrans.setValue(5, formattednewBalance);
+
+				account.budget_amount = account.budget_amount - addTrans.transaction_amount;
+				formattednewBudgetAmount = formatAmount(account.budget_amount);
+				homeTrans.setValue(6, formattednewBudgetAmount);
+			}
+			else if(addTrans.transaction_type == "Deposit")
+			{
+				addTrans.newbalance = account.balance + addTrans.transaction_amount;
+				formattednewBalance = formatAmount(addTrans.newbalance);
+				homeTrans.setValue(5, formattednewBalance);
+
+				formattednewBudgetAmount = formatAmount(account.budget_amount);
+				homeTrans.setValue(6, formattednewBudgetAmount);
+			}
 			break;
 		case 7:
-			addTrans.addTrans();
+			break;
 		case 8:
-			return;
+			addTrans.addTrans();
+			//account.updateAfterTrans();
+			break;
+		case 9:
+			return TransactionPage(UserID);
 			break;
 		default:
 			break;

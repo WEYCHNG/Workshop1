@@ -43,6 +43,19 @@ void Account::update()
 
 }
 
+void Account::updateAfterTrans()
+{
+	DBConnection db;
+	db.prepareStatement("UPDATE account SET budget_amount=?,balance=? WHERE UserID=? AND account_name=?");
+	db.stmt->setDouble(1, budget_amount);
+	db.stmt->setDouble(2, balance);
+	db.stmt->setString(5, UserID);
+	db.stmt->setString(6, account_name);
+	db.QueryStatement();
+	db.~DBConnection();
+
+}
+
 void Account::removeAccount() {
 	DBConnection db;
 	db.prepareStatement("DELETE FROM account WHERE UserID=? AND account_name=?");

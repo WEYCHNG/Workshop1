@@ -23,6 +23,7 @@ public:
 	bool confirmtoEdit();
 	void addAccount();
 	void update();
+	void updateAfterTrans();
 	void removeAccount();
 	void getAccount(string UserId,string account_name);
 	double totalAmount();
