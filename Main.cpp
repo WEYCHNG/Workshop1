@@ -743,6 +743,8 @@ void modifyAccount(Account account)
 //TRANSACTION PAGE
 void TransactionPage(string UserId)
 {
+	User user;
+	user.UserId = UserId;
 	string confirmation;
 	Menu transPage;
 	transPage.header = "Transaction Page";
@@ -766,7 +768,7 @@ void TransactionPage(string UserId)
 			//Serach transaction
 			break;
 		case 4:
-			return;
+			return UserPage(user);
 			break;
 		default:
 			break;
@@ -800,9 +802,10 @@ void newTrans(string UserID, string account_name)
 	string formattedTransAmount;
 	string formattednewBalance;
 	string formattednewBudgetAmount;
-	string transType;
 	string confirmation;
 	string accountName;
+	double tempAmount;
+	double tempBudget;
 
 	while (1)
 	{
@@ -856,18 +859,18 @@ void newTrans(string UserID, string account_name)
 		case 6:
 			if (addTrans.transaction_type == "Expenses")
 			{
-				addTrans.newbalance = account.balance- addTrans.transaction_amount;
-				formattednewBalance = formatAmount(addTrans.newbalance);
+				tempAmount = account.balance - addTrans.transaction_amount;
+				formattednewBalance = formatAmount(tempAmount);
 				homeTrans.setValue(5, formattednewBalance);
 
-				account.budget_amount = account.budget_amount - addTrans.transaction_amount;
-				formattednewBudgetAmount = formatAmount(account.budget_amount);
+				tempBudget = account.budget_amount - addTrans.transaction_amount;
+				formattednewBudgetAmount = formatAmount(tempBudget);
 				homeTrans.setValue(6, formattednewBudgetAmount);
 			}
 			else if(addTrans.transaction_type == "Deposit")
 			{
-				addTrans.newbalance = account.balance + addTrans.transaction_amount;
-				formattednewBalance = formatAmount(addTrans.newbalance);
+				tempAmount = account.balance + addTrans.transaction_amount;
+				formattednewBalance = formatAmount(tempAmount);
 				homeTrans.setValue(5, formattednewBalance);
 
 				formattednewBudgetAmount = formatAmount(account.budget_amount);
@@ -876,15 +879,19 @@ void newTrans(string UserID, string account_name)
 			break;
 		case 7:
 			cout << "\nID ==" << addTrans.AccountID;
-			cout << "\nAmount ==" << addTrans.newbalance;
+			cout << "\nAmount ==" << account.balance;
 			cout << "\nAmount trans ==" << addTrans.transaction_amount;
 			cout << "\nType ==" << addTrans.transaction_type;
 			cout << "\nCategory ==" << addTrans.category;
 			cout << "\nDescription ==" << addTrans.description;
 			break;
 		case 8:
+			addTrans.newbalance = tempAmount;
+			account.balance = tempAmount;
+			account.budget_amount = tempBudget;
 			addTrans.addTrans();
-			//account.updateAfterTrans();
+			account.updateAfterTrans();
+			return TransactionPage(UserID);
 			break;
 		case 9:
 			return TransactionPage(UserID);

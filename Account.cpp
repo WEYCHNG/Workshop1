@@ -49,8 +49,8 @@ void Account::updateAfterTrans()
 	db.prepareStatement("UPDATE account SET budget_amount=?,balance=? WHERE UserID=? AND account_name=?");
 	db.stmt->setDouble(1, budget_amount);
 	db.stmt->setDouble(2, balance);
-	db.stmt->setString(5, UserID);
-	db.stmt->setString(6, account_name);
+	db.stmt->setString(3, UserID);
+	db.stmt->setString(4, account_name);
 	db.QueryStatement();
 	db.~DBConnection();
 
