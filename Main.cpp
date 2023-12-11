@@ -851,7 +851,7 @@ void newTrans(string UserID, string account_name)
 				cin >> addTrans.description;
 				homeTrans.setValue(4, addTrans.description);
 			}
-			else if(addTrans.transaction_type == "Deposit")
+			else 
 			{
 				addTrans.description = "NULL";
 				homeTrans.setValue(4, addTrans.description);
@@ -867,15 +867,17 @@ void newTrans(string UserID, string account_name)
 				formattednewBudgetAmount = formatAmount(tempBudget);
 				homeTrans.setValue(6, formattednewBudgetAmount);
 			}
-			else if(addTrans.transaction_type == "Deposit")
+			else
 			{
 				tempAmount = account.balance + addTrans.transaction_amount;
 				formattednewBalance = formatAmount(tempAmount);
 				homeTrans.setValue(5, formattednewBalance);
 
+				tempBudget = account.budget_amount;
 				formattednewBudgetAmount = formatAmount(account.budget_amount);
 				homeTrans.setValue(6, formattednewBudgetAmount);
 			}
+			
 			break;
 		case 7:
 			cout << "\nID ==" << addTrans.AccountID;
