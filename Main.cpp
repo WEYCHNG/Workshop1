@@ -591,7 +591,7 @@ void modifyAccountPage(string confirmation,string UserId)
 			disPlayAcc = "";
 			break;
 		case 2:
-			cout << "Enter the account name to edit: ";
+			cout << "Enter the account name to select: ";
 			cin >>account.account_name;
 			mdfAccPage.setValue(1,account.account_name);
 			break;
@@ -808,6 +808,7 @@ void newTrans(string UserID, string account_name)
 	{
 		homeTrans.setValue(0, account_name);
 		account.getAccount(UserID, account_name);
+		addTrans.AccountID = account.AccountID;
 		if (Expenses) {
 			addTrans.transaction_type = "Expenses";
 			homeTrans.setValue(1, addTrans.transaction_type);
@@ -830,15 +831,15 @@ void newTrans(string UserID, string account_name)
 			Expenses = !Expenses;
 			break;
 		case 3://not done yet
-			cout << "Enter amount: RM";
+			cout << "Enter amount: RM ";
 			cin >> addTrans.transaction_amount;
 			formattedTransAmount = formatAmount(addTrans.transaction_amount);
 			homeTrans.setValue(2, formattedTransAmount);
 			break;
 		case 4:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
-			cin >> addTrans.description;
-			homeTrans.setValue(3, addTrans.description);
+			cin >> addTrans.category;
+			homeTrans.setValue(3, addTrans.category);
 			break;
 		case 5:
 			cout << "Description: ";
@@ -874,6 +875,12 @@ void newTrans(string UserID, string account_name)
 			}
 			break;
 		case 7:
+			cout << "\nID ==" << addTrans.AccountID;
+			cout << "\nAmount ==" << addTrans.newbalance;
+			cout << "\nAmount trans ==" << addTrans.transaction_amount;
+			cout << "\nType ==" << addTrans.transaction_type;
+			cout << "\nCategory ==" << addTrans.category;
+			cout << "\nDescription ==" << addTrans.description;
 			break;
 		case 8:
 			addTrans.addTrans();
