@@ -16,13 +16,13 @@ public:
 	Transaction();
 	Transaction(sql::ResultSet* data);
 
-	static vector<Transaction> findTrans(int AccountID, string sortColumn, bool ascending);
+	static vector<Transaction> findTransaction(string UserID, string sortColumn, bool ascending);
 	void addTrans();
 	//bool editTrans();//Just confirm to edit transaction (using SQL only)
 	//void updateTrans();//Update transaction //update transaction will be change follow by what are changes.
 	//void deleteTrans();//remove transaction //if delete transaction,balance and budget will reoriginal.
 	
-	
+	~Transaction();
 };
 
 #endif

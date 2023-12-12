@@ -19,7 +19,6 @@ public:
 
 	static vector<Account> findAccount(string userid,string sortColumn, bool ascending);
 	static vector<Account> selectAccount(string userid);
-	//static Account findAccount(int AccountID);
 	bool confirmtoEdit();
 	void addAccount();
 	void update();

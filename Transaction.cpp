@@ -39,12 +39,9 @@ void Transaction::addTrans()
 	AccountID = db.getGeneratedId();
 }
 
-
-vector<Transaction> findTrans(int AccountID,string sortColumn, bool ascending)
+vector<Transaction> Transaction::findTransaction(string UserID,string sortColumn, bool ascending)
 {
-	string query = "SELECT account_name,transaction_type,transaction_amount,newbalance,transaction_date, FROM `account`,'transaction' "
-		"WHERE account.AccountID = transaction.AccountID=? "
-		"ORDER BY" + sortColumn;
+	string query = "SELECT TransactionID, AccountID, transaction_type, transaction_amount,transaction_date FROM transaction JOIN account USING (AccountID) WHERE UserID = ? ORDER BY" + sortColumn;
 	if (ascending) {
 		query += " ASC";
 	}
@@ -55,7 +52,7 @@ vector<Transaction> findTrans(int AccountID,string sortColumn, bool ascending)
 
 	DBConnection db;
 	db.prepareStatement(query);
-	db.stmt->setInt(1, AccountID);
+	db.stmt->setString(1,UserID);
 
 	vector<Transaction> trans;
 
@@ -72,3 +69,5 @@ vector<Transaction> findTrans(int AccountID,string sortColumn, bool ascending)
 	db.~DBConnection();
 	return trans;
 }
+
+Transaction::~Transaction() {}

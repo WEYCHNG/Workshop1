@@ -39,6 +39,7 @@ void modifyAccount(Account account); //only need userid and accountname
 void TransactionPage(string UserId);
 //void selectAccToTransaction(string UserId, string account_name);
 void newTrans(string UserId,string account_name);
+void transHistory(string UserId);
 
 
 
@@ -333,7 +334,6 @@ void AccountPage(string UserId)
 	vector<Account> accounts;
 	string displayString = "";
 	string sortColumn = "account_name";
-	string userid="";
 	bool ascending = true;
 	string confirmation;
 
@@ -749,7 +749,6 @@ void TransactionPage(string UserId)
 	Menu transPage;
 	transPage.header = "Transaction Page";
 	transPage.addOption("Create transaction");//Add transaction depend UserID 
-	transPage.addOption("Edit transaction");//edit sorting depend the Transaction ID and UserID !! (Don't know how to get Transaction ID from transaction table)
 	transPage.addOption("Transaction History");//sorting option in here !!(depent type and date)
 	transPage.addOption("Back to UserPage");
 
@@ -762,12 +761,9 @@ void TransactionPage(string UserId)
 			modifyAccountPage(confirmation, UserId);
 			break;
 		case 2:
-			
+			transHistory(UserId);
 			break;
 		case 3:
-			//Serach transaction
-			break;
-		case 4:
 			return UserPage(user);
 			break;
 		default:
@@ -904,4 +900,75 @@ void newTrans(string UserID, string account_name)
 		}
 	}
 }
+
+void transHistory(string UserId)
+{
+	vector<Transaction> trans;
+	string displayString = "";
+	string sortColumn = "TransactionID";
+	bool ascending = true;
+
+	Menu transHis;
+	transHis.header = "History !";
+	transHis.addOption("Search / refresh transaction history");
+	transHis.addOption("Order By ");
+	transHis.addOption("Odering ");
+	transHis.addOption("Edit transaction");
+	transHis.addOption("Back to User Page");
+
+	Menu sortingSubMenu;
+	sortingSubMenu.header = "Select Sort category";
+	sortingSubMenu.addOption("Transaction type");
+	sortingSubMenu.addOption("Transaction Amount");
+	sortingSubMenu.addOption("Transaction date time");
+
+	while (1)
+	{
+		transHis.setValue(1, sortColumn);
+		if (ascending) {
+			transHis.setValue(2, "Ascending");
+		}
+		else {
+			transHis.setValue(2, "Descending");
+		}
+
+		if (displayString == "") {
+			displayString = BLUE"\nSearch Result:\n" RESET;
+			stringstream tmpString;
+			tmpString << fixed << setprecision(2) << setw(5) << "TransactionID" << "|"  << setw(20)
+				<< "Transaction Type" << "|" << setw(20) << "Transaction Amount" << "|" << setw(20) << "Transaction date" << "|" << endl;
+
+			for (int i = 0; i < trans.size(); i++) {
+				tmpString << setw(10) << trans[i].TransactionID << "|" << setw(25) 
+					 << trans[i].transaction_type << "|" << setw(25) << trans[i].transaction_amount
+					<< "|" << setw(25) << trans[i].transaction_date << "|" << endl;
+			}
+			displayString += tmpString.str();
+		}
+
+		switch (transHis.prompt())
+		{
+		case 1:
+			cout << UserId;
+		case 2:
+			trans = Transaction::findTransaction(UserId, sortColumn, ascending);
+			displayString = "";
+			break;
+		case 3:
+			switch (sortingSubMenu.prompt())
+			{
+			case 1:
+				sortColumn = "TransactionID";
+				break;
+			case 2:
+				sortColumn = "transaction_type";
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 
