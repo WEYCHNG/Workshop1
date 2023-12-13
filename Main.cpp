@@ -932,40 +932,42 @@ void transHistory(string UserId)
 			transHis.setValue(2, "Descending");
 		}
 
-		if (displayString == "") {
+		if (displayString == "")
+		{
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "Transaction ID" << "|"  << setw(25)
-				<< "Transaction Type" << "|" << setw(25) << "Transaction Amount" << "|" << setw(25) 
-				<<"Category" << "|" << setw(25) << "Description" << "|" << setw(25) << "Newbalance" << "|" 
+			tmpString << fixed << setprecision(2) << setw(5) << "Transaction ID" << "|" << setw(25)
+				<< "Transaction Type" << "|" << setw(25) << "Transaction Amount" << "|" << setw(25)
+				<< "Category" << "|" << setw(25) << "Description" << "|" << setw(25) << "Newbalance" << "|"
 				<< setw(20) << "Transaction date" << "|" << endl;
 
-			for (int i = 0; i < trans.size(); i++) {
+			for (int i = 0; i < trans.size(); i++) 
+			{
 				
-				tmpString << setw(10) << trans[i].TransactionID << "|" << setw(25) 
-					 << trans[i].transaction_type << "|" << setw(25) << trans[i].transaction_amount
-					<< "|" << setw(25) <<trans[i].category << "|" << setw(25) << trans[i].description << "|" 
-					<< setw(25) << trans[i].newbalance << "|" << setw(25) <<trans[i].transaction_date << "|" << endl;
-				// ask jy
+				tmpString << setw(10) << trans[i].TransactionID << "|" << setw(25)<< trans[i].transaction_type << "|" << setw(25);
+
 				if (trans[i].transaction_type == "Deposit")
 				{
-					string transaction_amount = GREEN "+" + to_string(trans[i].transaction_amount);
+					tmpString << GREEN "+" << trans[i].transaction_amount << WHITE;
 				}
 				else
 				{
-					cout << RED"-" << trans[i].transaction_amount << WHITE;
+					tmpString << RED"-" << trans[i].transaction_amount << WHITE;
 				}
+				tmpString << "|" << setw(25) << trans[i].category << "|" << setw(25) << trans[i].description << "|" << setw(25);
 
 				if (trans[i].newbalance < 0)
 				{
-					cout << RED"-" << trans[i].newbalance << WHITE;
+					tmpString << RED"-" << trans[i].newbalance << WHITE;
 				}
 				else
 				{
-					cout << GREEN << trans[i].newbalance << WHITE;
+					tmpString << GREEN << trans[i].newbalance << WHITE;
 				}
+			
+				tmpString << "|" << setw(25) << trans[i].transaction_date << "|" << endl;
+				
 			}
-
 			displayString += tmpString.str();
 		}
 
