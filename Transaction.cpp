@@ -16,10 +16,11 @@ Transaction::Transaction()
 //Get data from database
 Transaction::Transaction(sql::ResultSet* data)
 {
+	TransactionID = data->getInt("TransactionID");
 	description = data->getString("description");
 	category = data->getString("category");
 	transaction_type = data->getString("transaction_type");
-	newbalance = data->getDouble("transaction_amount");
+	transaction_amount = data->getDouble("transaction_amount");
 	transaction_date = data->getString("transaction_date");
 	newbalance = data->getDouble("newbalance");
 }
@@ -41,7 +42,7 @@ void Transaction::addTrans()
 
 vector<Transaction> Transaction::findTransaction(string UserID,string sortColumn, bool ascending)
 {
-	string query = "SELECT TransactionID, AccountID, transaction_type, transaction_amount,transaction_date FROM transaction JOIN account USING (AccountID) WHERE UserID = ? ORDER BY" + sortColumn;
+	string query = "SELECT TransactionID, transaction_type, transaction_amount, category, description, newbalance, transaction_date FROM transaction JOIN account USING (AccountID) WHERE UserID = ? ORDER BY " + sortColumn;
 	if (ascending) {
 		query += " ASC";
 	}

@@ -935,36 +935,68 @@ void transHistory(string UserId)
 		if (displayString == "") {
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "TransactionID" << "|"  << setw(20)
-				<< "Transaction Type" << "|" << setw(20) << "Transaction Amount" << "|" << setw(20) << "Transaction date" << "|" << endl;
+			tmpString << fixed << setprecision(2) << setw(5) << "Transaction ID" << "|"  << setw(25)
+				<< "Transaction Type" << "|" << setw(25) << "Transaction Amount" << "|" << setw(25) 
+				<<"Category" << "|" << setw(25) << "Description" << "|" << setw(25) << "Newbalance" << "|" 
+				<< setw(20) << "Transaction date" << "|" << endl;
 
 			for (int i = 0; i < trans.size(); i++) {
+				
 				tmpString << setw(10) << trans[i].TransactionID << "|" << setw(25) 
 					 << trans[i].transaction_type << "|" << setw(25) << trans[i].transaction_amount
-					<< "|" << setw(25) << trans[i].transaction_date << "|" << endl;
+					<< "|" << setw(25) <<trans[i].category << "|" << setw(25) << trans[i].description << "|" 
+					<< setw(25) << trans[i].newbalance << "|" << setw(25) <<trans[i].transaction_date << "|" << endl;
+				// ask jy
+				if (trans[i].transaction_type == "Deposit")
+				{
+					string transaction_amount = GREEN "+" + to_string(trans[i].transaction_amount);
+				}
+				else
+				{
+					cout << RED"-" << trans[i].transaction_amount << WHITE;
+				}
+
+				if (trans[i].newbalance < 0)
+				{
+					cout << RED"-" << trans[i].newbalance << WHITE;
+				}
+				else
+				{
+					cout << GREEN << trans[i].newbalance << WHITE;
+				}
 			}
+
 			displayString += tmpString.str();
 		}
+
+		transHis.footer = displayString;
 
 		switch (transHis.prompt())
 		{
 		case 1:
-			cout << UserId;
-		case 2:
 			trans = Transaction::findTransaction(UserId, sortColumn, ascending);
 			displayString = "";
-			break;
-		case 3:
+			break;	
+		case 2:
 			switch (sortingSubMenu.prompt())
 			{
 			case 1:
 				sortColumn = "TransactionID";
 				break;
 			case 2:
-				sortColumn = "transaction_type";
+				sortColumn = "transaction_amount";
 				break;
+			case 3:
+				sortColumn = "transaction_date";
 			}
 			break;
+		case 3:
+			ascending = !ascending;
+		case 4:
+			cout << "Enter Transaction ID to edit:";
+			int transactionId;
+			cin >> transactionId;
+
 		default:
 			break;
 		}
