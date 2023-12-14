@@ -152,7 +152,7 @@ double Account::totalAmount()
 	}
 }
 
-bool Account::confirmtoEdit(string UserId)
+bool Account::confirmtoEdit(string UserID)
 {
 	DBConnection db;
 	db.prepareStatement("SELECT account_name,budget_amount,balance,start_date,end_date FROM account WHERE UserID=? AND account_name=?");
@@ -239,7 +239,7 @@ void Account::getAccount(string UserID,string account_name)
 void Account::getBlcBdg(string UserId,int AccountID)
 {
 	DBConnection db;
-	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND AccounID=?");
+	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND AccountID=?");
 	db.stmt->setString(1, UserID);
 	db.stmt->setInt(2, AccountID);
 	db.QueryResult();

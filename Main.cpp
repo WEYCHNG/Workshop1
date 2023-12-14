@@ -594,8 +594,6 @@ void modifyAccountPage(string confirmation,string UserId)
 			cout << "Enter the account name to select: ";
 			cin >>account.account_name;
 			mdfAccPage.setValue(1,account.account_name);
-
-			cout << "UserID" << UserId;
 			break;
 		case 3:
 			if (confirmation == "ConfirmEdit")
@@ -820,10 +818,10 @@ void newTrans(string UserID, string account_name)
 			homeTrans.setValue(1, addTrans.transaction_type);
 			
 		}
-		else {
+		else
+		{
 			addTrans.transaction_type ="Deposit";
-			homeTrans.setValue(1, addTrans.transaction_type);
-			
+			homeTrans.setValue(1, addTrans.transaction_type);	
 		}
 
 		homeTrans.header = "Add Transaction";
@@ -915,7 +913,7 @@ void transHistory(string UserId)
 	transHis.addOption("Search / refresh transaction history");
 	transHis.addOption("Order By ");
 	transHis.addOption("Odering ");
-	transHis.addOption("Edit transaction");
+	transHis.addOption("Edit transaction with Transaction ID");
 	transHis.addOption("Confirm");
 	transHis.addOption("Back to User Page");
 
@@ -1000,9 +998,10 @@ void transHistory(string UserId)
 			int transactionId;
 			cin >> transactionId;
 			transaction.TransactionID = transactionId;
+			transHis.setValue(3,to_string(transaction.TransactionID));
 			break;
 		case 5:
-			if (transaction.confirmToEdit(transaction.TransactionID)) {
+			if (transaction.confirmToUpdate(transaction.TransactionID)) {
 				modifyTrans(transaction,UserId);
 			}
 			else 
@@ -1054,6 +1053,16 @@ void modifyTrans(Transaction transaction,string UserId)
 
 	while (1)
 	{
+		if (Expenses)
+		{
+			temp.transaction_type = "Expenses";
+			modifyTrans.setValue(0, temp.transaction_type);
+		}
+		else
+		{
+			temp.transaction_type = "Deposit";
+			modifyTrans.setValue(0, temp.transaction_type);
+		}
 		account.getBlcBdg(UserId, account.AccountID);
 
 		modifyTrans.setValue(0, temp.transaction_type);
@@ -1065,18 +1074,7 @@ void modifyTrans(Transaction transaction,string UserId)
 		modifyTrans.setValue(3, temp.description);
 
 		formattednewBalance = formatAmount(temp.newbalance);
-		modifyTrans.setValue(1, formattednewBalance);
-	
-		if (Expenses) 
-		{
-			temp.transaction_type = "Expenses";
-			modifyTrans.setValue(1, temp.transaction_type);
-		}
-		else 
-		{
-			temp.transaction_type = "Deposit";
-			modifyTrans.setValue(1, temp.transaction_type);
-		}
+		modifyTrans.setValue(4, formattednewBalance);
 		
 		tempTransAmount = temp.transaction_amount;
 		tempnewBalance = temp.newbalance;
@@ -1086,6 +1084,7 @@ void modifyTrans(Transaction transaction,string UserId)
 		{
 		case 1:
 			Expenses = !Expenses;
+			break;
 		case 2:
 			cout << "Enter amount: RM ";
 			cin >> temp.transaction_amount;
@@ -1112,13 +1111,22 @@ void modifyTrans(Transaction transaction,string UserId)
 				account.budget_amount = tempTransAmount + tempnewBalance;
 				tempAmount = account.balance - temp.transaction_amount;
 				tempBudget = account.budget_amount - temp.transaction_amount;
+
+				temp.newbalance = tempAmount;
+				account.balance = tempAmount;
+				account.budget_amount = tempBudget;
 			}
 			else
 			{
 				account.balance = tempTransAmount - tempnewBalance;
 				tempAmount = account.balance + temp.transaction_amount;
 				tempBudget = account.budget_amount;
+
+				temp.newbalance = tempAmount;
+				account.balance = tempAmount;
+				account.budget_amount = tempBudget;
 			}
+			break;
 		case 6:
 			transaction = temp;
 		case 7:
@@ -1132,7 +1140,6 @@ void modifyTrans(Transaction transaction,string UserId)
 			return;
 			break;
 		case 9:
-			return;
 			break;
 		default:
 			break;

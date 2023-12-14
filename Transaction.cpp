@@ -42,7 +42,7 @@ void Transaction::addTrans()
 
 vector<Transaction> Transaction::findTransaction(string UserID,string sortColumn, bool ascending)
 {
-	string query = "SELECT TransactionID, transaction_type, transaction_amount, category, description, newbalance, transaction_date FROM transaction JOIN account USING (AccountID) WHERE UserID = ? ORDER BY " + sortColumn;
+	string query = "SELECT TransactionID,transaction_type, transaction_amount, category, description, newbalance, transaction_date FROM transaction JOIN account USING (AccountID) WHERE UserID = ? ORDER BY " + sortColumn;
 	if (ascending) {
 		query += " ASC";
 	}
@@ -71,18 +71,18 @@ vector<Transaction> Transaction::findTransaction(string UserID,string sortColumn
 	return trans;
 }
 
-bool Transaction::confirmToEdit(int transactionId)
+bool Transaction::confirmToUpdate(int TransactionID)
 {
 	DBConnection db;
-	db.prepareStatement("SELECT AccountID,description,category,transaction_type,transaction_amount,newbalance FROM transaction WHERE TransactionID=?");
-	db.stmt->setInt(1, TransactionID);
+	db.prepareStatement("SELECT AccountID,category,description,transaction_type,transaction_amount,newbalance FROM transaction WHERE TransactionID = ?");
+	db.stmt->setInt(1,TransactionID);
 	db.QueryResult();
 	if (db.res->rowsCount() == 1)
 	{
 		while (db.res->next()) {
 			AccountID = db.res->getInt("AccountID");
-			description = db.res->getString("description");
 			category = db.res->getString("category");
+			description = db.res->getString("description");
 			transaction_type = db.res->getString("transaction_type");
 			transaction_amount = db.res->getDouble("transaction_amount");
 			newbalance = db.res->getDouble("newbalance");
