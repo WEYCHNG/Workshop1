@@ -19,12 +19,13 @@ public:
 
 	static vector<Account> findAccount(string userid,string sortColumn, bool ascending);
 	static vector<Account> selectAccount(string userid);
-	bool confirmtoEdit();
+	bool confirmtoEdit(string UserId);
 	void addAccount();
 	void update();
 	void updateAfterTrans();
 	void removeAccount();
 	void getAccount(string UserId,string account_name);
+	void getBlcBdg(string UserId,int AccountID);
 	double totalAmount();
 	double chgeByTrans();
 

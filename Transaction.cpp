@@ -71,4 +71,30 @@ vector<Transaction> Transaction::findTransaction(string UserID,string sortColumn
 	return trans;
 }
 
+bool Transaction::confirmToEdit(int transactionId)
+{
+	DBConnection db;
+	db.prepareStatement("SELECT AccountID,description,category,transaction_type,transaction_amount,newbalance FROM transaction WHERE TransactionID=?");
+	db.stmt->setInt(1, TransactionID);
+	db.QueryResult();
+	if (db.res->rowsCount() == 1)
+	{
+		while (db.res->next()) {
+			AccountID = db.res->getInt("AccountID");
+			description = db.res->getString("description");
+			category = db.res->getString("category");
+			transaction_type = db.res->getString("transaction_type");
+			transaction_amount = db.res->getDouble("transaction_amount");
+			newbalance = db.res->getDouble("newbalance");
+		}
+		db.~DBConnection();
+		return true;
+	}
+	else
+	{
+		db.~DBConnection();
+		return false;
+	}
+}
+
 Transaction::~Transaction() {}

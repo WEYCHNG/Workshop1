@@ -152,7 +152,7 @@ double Account::totalAmount()
 	}
 }
 
-bool Account::confirmtoEdit()
+bool Account::confirmtoEdit(string UserId)
 {
 	DBConnection db;
 	db.prepareStatement("SELECT account_name,budget_amount,balance,start_date,end_date FROM account WHERE UserID=? AND account_name=?");
@@ -235,5 +235,28 @@ void Account::getAccount(string UserID,string account_name)
 		db.~DBConnection();
 	}
 }
+
+void Account::getBlcBdg(string UserId,int AccountID)
+{
+	DBConnection db;
+	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND AccounID=?");
+	db.stmt->setString(1, UserID);
+	db.stmt->setInt(2, AccountID);
+	db.QueryResult();
+	if (db.res->rowsCount() > 0)
+	{
+		while (db.res->next()) {
+			balance = db.res->getDouble("balance");
+			budget_amount = db.res->getDouble("budget_amount");
+		}
+		db.~DBConnection();
+	}
+	else
+	{
+		db.~DBConnection();
+	}
+}
+
+
 
 Account::~Account() {}
