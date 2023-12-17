@@ -97,4 +97,27 @@ bool Transaction::confirmToUpdate(int TransactionID)
 	}
 }
 
+void Transaction::updateTrans(int TransactionID)
+{
+	DBConnection db;
+	db.prepareStatement("UPDATE transaction SET transaction_type=?, transaction_amount=?, category=?, description=?, newbalance=? WHERE TransactionID=? ");
+	db.stmt->setString(1, transaction_type);
+	db.stmt->setDouble(2, transaction_amount);
+	db.stmt->setString(3, category);
+	db.stmt->setString(4, description);
+	db.stmt->setDouble(5, newbalance);
+	db.stmt->setInt(6, TransactionID);
+	db.QueryStatement();
+	db.~DBConnection();	
+}
+
+void Transaction::deleteTrans(int TransactionID)
+{
+	DBConnection db;
+	db.prepareStatement("DELETE FROM transaction WHERE TransactionID=?");
+	db.stmt->setInt(1, TransactionID);
+	db.QueryStatement();
+	db.~DBConnection();
+}
+
 Transaction::~Transaction() {}

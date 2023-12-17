@@ -46,14 +46,13 @@ void Account::update()
 void Account::updateAfterTrans()
 {
 	DBConnection db;
-	db.prepareStatement("UPDATE account SET budget_amount=?,balance=? WHERE UserID=? AND account_name=?");
+	db.prepareStatement("UPDATE account SET budget_amount=?,balance=? WHERE UserID=? AND AccountID=?");
 	db.stmt->setDouble(1, budget_amount);
 	db.stmt->setDouble(2, balance);
 	db.stmt->setString(3, UserID);
-	db.stmt->setString(4, account_name);
+	db.stmt->setInt(4, AccountID);
 	db.QueryStatement();
 	db.~DBConnection();
-
 }
 
 void Account::removeAccount() {
@@ -236,7 +235,7 @@ void Account::getAccount(string UserID,string account_name)
 	}
 }
 
-void Account::getBlcBdg(string UserId,int AccountID)
+void Account::getBlcBdg(string UserID,int AccountID)
 {
 	DBConnection db;
 	db.prepareStatement("SELECT account_name,budget_amount,balance FROM account WHERE UserID=? AND AccountID=?");
@@ -256,7 +255,5 @@ void Account::getBlcBdg(string UserId,int AccountID)
 		db.~DBConnection();
 	}
 }
-
-
 
 Account::~Account() {}

@@ -18,10 +18,9 @@ public:
 
 	static vector<Transaction> findTransaction(string UserID, string sortColumn, bool ascending);
 	void addTrans();
-	bool confirmToUpdate(int TransactionID);
-	//bool editTrans();//Just confirm to edit transaction (using SQL only)
-	//void updateTrans();//Update transaction //update transaction will be change follow by what are changes.
-	//void deleteTrans();//remove transaction //if delete transaction,balance and budget will reoriginal.
+	bool confirmToUpdate(int TransactionID);//Edit Transaction
+	void updateTrans(int TransactionID);//Update transaction 
+	void deleteTrans(int transactionID);//remove transaction //if delete transaction,balance and budget will reoriginal.
 	
 	~Transaction();
 };
