@@ -5,6 +5,7 @@
 #include <ctime>//get time
 #include <sstream>//set precision
 #include <iostream>
+#include <chrono>//waiting
 
 //Project header
 #include "User.h"
@@ -46,6 +47,7 @@ void modifyTrans(Transaction transaction,string UserId);
 
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
+string getCurrentMonthAbbreviation();
 //----------------------------------------------------------------------------------------------------//
 
 int main()
@@ -152,6 +154,7 @@ void registerAccount() {
 		case 7:
 			newacc.insert();
 			cout <<YELLOW<< "Register sucessfull !\n\n"<<RESET;
+			_getch();
 			return;
 		case 8:
 			return;
@@ -299,6 +302,7 @@ User profile(User user) {
 		
 		string firstName;
 		string lastName;
+		string password;
 		firstName = temp.first_name;
 		lastName = temp.last_name;
 
@@ -323,6 +327,15 @@ User profile(User user) {
 		case 3:
 			cout << "Enter new password:";
 			cin >> temp.password;
+			cin >> password;
+			if (password.length() < 6) {
+				cout << RED"\t\tPassword must be at least 6 character long" RESET;
+				_getch();
+			}
+			else {
+				temp.password = password;
+				profileMenu.setValue(3, temp.password);
+			}
 			break;
 		case 4:
 			cout << "Enter new phone number:";
@@ -344,7 +357,8 @@ User profile(User user) {
 				{	
 					break;
 				}
-				cout << "Phone Number should contain only 10 to 11 digits. \nPlease enter again: ";
+				cout << RED"\t\tPhone Number should contain only 10 to 11 digits." RESET;
+				cout << "\nPlease enter again: ";
 			}
 			break;
 		case 5:
@@ -353,14 +367,14 @@ User profile(User user) {
 		case 6:
 			user = temp;
 			user.update();
-			cout << CYAN"Updated"<<RESET;
+			cout << CYAN"\t\tUpdated"<<RESET;
 			_getch();
 			break;
 		case 7:
 			return user;
 			break;
 		case 8:
-			cout <<RED<< "Delete your account? [Y/N]"<<RESET;
+			cout <<RED<< "\t\tDelete your account? [Y/N]"<<RESET;
 			char confirm;
 			confirm = _getch();
 			if (confirm == 'Y' || confirm == 'y') {
@@ -395,7 +409,7 @@ void AccountPage(string UserId)
 	homeAccount.addOption("Back to User Page");
 
 	Menu sortingSubMenu;
-	sortingSubMenu.header = "Select Sort category";
+	sortingSubMenu.header = "\t\t\tSelect Sort category";
 	sortingSubMenu.addOption("Account name");
 	sortingSubMenu.addOption("Balance");
 	sortingSubMenu.addOption("Budget Amount");
@@ -424,7 +438,7 @@ void AccountPage(string UserId)
 			displayString += tmpString.str();
 		}
 
-		homeAccount.header = "\t\tAccounts";
+		homeAccount.header = "\tAccounts";
 		homeAccount.footer = displayString;
 		switch (homeAccount.prompt())
 		{
@@ -444,7 +458,6 @@ void AccountPage(string UserId)
 			case 3:
 				sortColumn = "budget_amount";
 				break;
-
 			}
 			break;
 		case 3:
@@ -474,6 +487,31 @@ string formatAmount(double amount) {
 	return formattedStream.str(); // Return the formatted string
 }
 
+string getCurrentMonthAbbreviation() {
+	// Get the current system time
+	auto now = std::chrono::system_clock::now();
+
+	// Convert the current time to a time_t object
+	std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+	// Declare a tm structure
+	std::tm timeInfo;
+
+	// Use localtime_s to fill the tm structure with the current time information
+	if (localtime_s(&timeInfo, &currentTime) != 0) {
+		// Handle error if localtime_s fails
+		return "Error";
+	}
+
+	// Array containing month abbreviations
+	const char* monthAbbreviations[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+										"Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+	// Extract current month index and return its abbreviation
+	int currentMonthIndex = timeInfo.tm_mon;
+	return monthAbbreviations[currentMonthIndex];
+}
+
 //1)Add account
 void newAccount(string UserId) 
 {
@@ -496,7 +534,7 @@ void newAccount(string UserId)
 	time_t current = time(0); // get time in epoch seconds (since 1900)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
-
+	string abbreviation = getCurrentMonthAbbreviation();
 	
 
 	while (1) {
@@ -511,26 +549,36 @@ void newAccount(string UserId)
 		case 2:
 			cout << "Enter account balance: RM ";
 			cin >> addAccount.balance;
-
+			if (addAccount.balance < 0)
+			{
+				cout << RED"\t\tAccount balance cannot be less than zero." RESET;
+				cout << "\nPlease enter account balance again: ";
+				cin >> addAccount.balance;
+			}
 			// Format the balance amount using formatAmount function
 			formattedBalance = formatAmount(addAccount.balance);
-
 			// Set the formatted string to the menu value
 			accountMenu.setValue(1, formattedBalance);
 			break;
 		case 3:
 			cout << "Enter budget amount: RM ";
 			cin >> addAccount.budget_amount;
-
+			if (addAccount.budget_amount < 0)
+			{
+				cout << RED"\t\tBudget amount cannot be less than zero." RESET;
+				cout << "\nPlease enter budget amount again: ";
+				cin >> addAccount.budget_amount;
+			}
 			// Format the budget amount using formatAmount function
 			formattedBudget = formatAmount(addAccount.budget_amount);
-
 			// Set the formatted string to the menu value
 			accountMenu.setValue(2, formattedBudget);
 			break;
 		case 4:
-			cout << "Enter fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			cin >> month;
+			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
+			month = abbreviation;
+			cout<<month;
+			_getch();
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
@@ -694,6 +742,8 @@ void modifyAccount(Account account)
 	time_t current = time(0); // get time in epoch seconds (since 1900)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
+	string abbreviation = getCurrentMonthAbbreviation();
+
 
 	while(1)
 	{
@@ -722,8 +772,10 @@ void modifyAccount(Account account)
 			cin >> temp.budget_amount;
 			break;
 		case 4:
-			cout << "Enter fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			cin >> month;
+			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
+			month = abbreviation;
+			cout << month;
+			_getch();
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
