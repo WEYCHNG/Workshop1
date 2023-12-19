@@ -1,9 +1,4 @@
-#include "User.h"
-#include "Account.h"
-#include "Transaction.h"
-#include "Menu.h"
-#include "DBConnection.h"
-
+//System 
 //#include <windows.h>
 #include <conio.h>//_getch()
 #include <iomanip>//setw()
@@ -11,6 +6,12 @@
 #include <sstream>//set precision
 #include <iostream>
 
+//Project header
+#include "User.h"
+#include "Account.h"
+#include "Transaction.h"
+#include "Menu.h"
+#include "DBConnection.h"
 
 //colour
 #define RESET   "\033[0m"     // Reset to default color
@@ -22,7 +23,6 @@
 #define WHITE   "\033[37m"    // White color
 using namespace std;
 
-//getline(cin, keyWord);
 //User table
 void registerAccount();
 void loginMenu();
@@ -50,9 +50,8 @@ string formatAmount(double amount);//to correct into 2 d.p.
 
 int main()
 {
-
 	Menu LoginPage;
-	LoginPage.header = "\t\tWelcome to money manager !!!";
+	LoginPage.header = "\t\t\tWelcome to money manager !!!";
 	LoginPage.addOption("Register");
 	LoginPage.addOption("Login");
 	LoginPage.addOption("Exit");
@@ -67,7 +66,8 @@ int main()
 			loginMenu();
 			break;
 		case 3:
-			return 0;
+			exit(0);
+			break;
 		default:
 			break;
 		}
@@ -80,7 +80,7 @@ void registerAccount() {
 	User newacc;
 
 	Menu cnMenu;
-	cnMenu.header = "Registration";
+	cnMenu.header ="\t\tRegistration";
 	cout << endl;
 	cnMenu.addOption("UserId");
 	cnMenu.addOption("First Name");
@@ -129,17 +129,25 @@ void registerAccount() {
 			break;
 		case 6:
 			cout << "Enter Phone Number: ";
-			cin >> tmpinput;
-			if (tmpinput.length() < 9)
+			while (true)
 			{
-				cout << RED <<"Invalid ! "<<RESET;
-				_getch();
+				cin >> newacc.phone_number;
+				bool isValid = true;
+				for (char ch : newacc.phone_number)
+				{
+					if (!isdigit(ch))
+					{
+						isValid = false;
+						break;
+					}
+				}
+				if (isValid && newacc.phone_number.length() >= 10 && newacc.phone_number.length() <= 11)
+				{
+					break;
+				}
+				cout << "Phone Number should contain only 10 to 11 digits. \nPlease enter again: ";
 			}
-			else
-			{
-				newacc.phone_number = tmpinput;
-				cnMenu.setValue(5, newacc.phone_number);
-			}
+			cnMenu.setValue(5, newacc.phone_number);
 			break;
 		case 7:
 			newacc.insert();
@@ -158,14 +166,17 @@ void registerAccount() {
 //2)Login
 void loginMenu()
 {
+	User user;
+	char ch;
+	char password[50];
+	int index = 0;
+
 	Menu loginMenu;
-	loginMenu.header = "LOGIN";
+	loginMenu.header = "\tLOGIN";
 	loginMenu.addOption("UserId");
 	loginMenu.addOption("Password");
 	loginMenu.addOption("Confirm");
 	loginMenu.addOption("Back");
-
-	User user;
 
 	while (1) {
 		switch (loginMenu.prompt())
@@ -177,8 +188,23 @@ void loginMenu()
 			break;
 		case 2:
 			cout << "Enter Password: ";
-			cin >> user.password;
-			loginMenu.setValue(1, user.password);
+			while (true) {
+				ch = _getch(); // Capture the input without displaying it
+				if (ch == 13) { // 13 is the ASCII code for Enter key
+					break;
+				}
+				else if (ch == 8 && index > 0) { // 8 is the ASCII code for Backspace
+					// Handle backspace: move cursor back, overwrite with a space, move back again
+					index--;
+					cout << "\b \b";
+				}
+				else if (ch != 8) { // Ignore the backspace character
+					password[index++] = ch;
+					cout << '*';
+					user.password = password;
+				}
+			}
+			loginMenu.setValue(1,"********");
 			break;
 		case 3:
 			if (user.login()) {
@@ -241,7 +267,7 @@ void UserPage(User user)
 			//Analysis
 			break;
 		case 5:
-			return;
+			main();
 			break;
 		default:
 			break;
@@ -259,29 +285,40 @@ User profile(User user) {
 	profileMenu.addOption("Fisrt Name");
 	profileMenu.addOption("Last Name");
 	profileMenu.addOption("Password");;
-	profileMenu.addOption("Phone Number (01X-XXXXXXX)");
+	profileMenu.addOption("Phone Number (Exp:01157426036)");
 	profileMenu.addOption("Reset");
 	profileMenu.addOption("Save");
 	profileMenu.addOption("Back");
 	profileMenu.addOption("Delete Account");
 
-	string tmpInput;
 	while (1) {
 		profileMenu.setValue(0, temp.first_name);
 		profileMenu.setValue(1, temp.last_name);
 		profileMenu.setValue(2, temp.password);
 		profileMenu.setValue(3, temp.phone_number);
 		
+		string firstName;
+		string lastName;
+		firstName = temp.first_name;
+		lastName = temp.last_name;
 
 		switch (profileMenu.prompt())
 		{
 		case 1:
 			cout << "Enter First Name:";
-			cin >> temp.first_name;
+			getline(cin, temp.first_name);
+			if (temp.first_name.empty())
+			{
+				temp.first_name = firstName;
+			}
 			break;
 		case 2:
 			cout << "Enter Last Name:";
-			cin >> temp.last_name;
+			getline(cin,temp.last_name);
+			if (temp.last_name.empty())
+			{
+				temp.last_name = lastName;
+			}
 			break;
 		case 3:
 			cout << "Enter new password:";
@@ -289,15 +326,25 @@ User profile(User user) {
 			break;
 		case 4:
 			cout << "Enter new phone number:";
-			cin >> tmpInput;
-			if (tmpInput.length() < 9)
+			while (true) 
 			{
-				cout << "Invalid ! ";
-				_getch();
-			}
-			else
-			{
-				temp.phone_number = tmpInput;
+				cin>>temp.phone_number;
+				bool isValid = true;
+
+				for (char ch : temp.phone_number)
+				{
+					if (!isdigit(ch)) 
+					{
+						isValid = false;
+						break;
+					}
+				}
+
+				if (isValid && temp.phone_number.length() >= 10 && temp.phone_number.length() <= 11)
+				{	
+					break;
+				}
+				cout << "Phone Number should contain only 10 to 11 digits. \nPlease enter again: ";
 			}
 			break;
 		case 5:
@@ -306,8 +353,9 @@ User profile(User user) {
 		case 6:
 			user = temp;
 			user.update();
-			cout << "Updated";
+			cout << CYAN"Updated"<<RESET;
 			_getch();
+			break;
 		case 7:
 			return user;
 			break;
@@ -366,13 +414,13 @@ void AccountPage(string UserId)
 		if (displayString == "") {
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5)  << "Account Name" << "|" << setw(20) << "Balance"
-				<< "|" << setw(20) << "Budget amount" << "|" << setw(20) << "Start date" << "|" << setw(20) << "End date" <<  "|"<< endl;
+			tmpString << fixed << setprecision(2) << setw(5)  << "Account Name" << "|" << setw(18) << "Balance"
+				<< "|" << setw(23) << "Budget amount" << "|" << setw(23) << "Start date" << "|" << setw(23) << "End date" <<  "|"<< endl;
 
 			for (int i = 0; i < accounts.size(); i++) {
-				tmpString << setw(10) << accounts[i].account_name << "|" << setw(25) << accounts[i].balance
-					<< "|" << setw(10) << accounts[i].budget_amount << "|" << setw(25) << accounts[i].start_date 
-					<< "|" << setw(25) << accounts[i].end_date<<"|" << endl;
+				tmpString << setw(12) << accounts[i].account_name << "|" << setw(18) << accounts[i].balance
+					<< "|" << setw(23) << accounts[i].budget_amount << "|" << setw(23) << accounts[i].start_date 
+					<< "|" << setw(23) << accounts[i].end_date<<"|" << endl;
 			}
 			displayString += tmpString.str();
 		}
@@ -413,6 +461,7 @@ void AccountPage(string UserId)
 		case 6:
 			return;
 			break;
+
 		default:
 			break;
 		}
@@ -578,7 +627,7 @@ void modifyAccountPage(string confirmation,string UserId)
 			tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
 
 			for (int i = 0; i < Acc.size(); i++) {
-				tmpString << setw(10) << Acc[i].account_name << "|" << endl;
+				tmpString << setw(12) << Acc[i].account_name << "|" << endl;
 			}
 			disPlayAcc += tmpString.str();
 		}
@@ -1078,10 +1127,9 @@ void modifyTrans(Transaction transaction,string UserId)
 		}
 		else
 		{
-			cout << RED << "\tInvalid input !" << CYAN << " Please press enter to continues..." << RESET;
+			cout << RED << "\n\tInvalid input !" << CYAN << " Please press enter to continues..." << RESET;
 			_getch();
-			system("cls");
-			cout << "Please select again: ";
+			cout << "\nPlease select again: ";
 			cin >> temp.transaction_type;
 			modifyTrans.setValue(0, temp.transaction_type);
 		}

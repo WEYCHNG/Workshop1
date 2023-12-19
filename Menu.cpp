@@ -3,6 +3,10 @@
 #include <conio.h>
 #include <iomanip>
 
+#define YELLOW  "\033[33m"    // Yellow color
+#define BLUE    "\033[34m"    // DeepBlue color
+#define RESET   "\033[0m"     // Reset to default color
+
 using namespace std;
 
 Menu::Menu() {
@@ -16,17 +20,17 @@ int Menu::prompt() {
 	do
 	{
 		system("cls"); // clear ur console
-		cout << "==================================================================="<<endl;
-		cout << setw(20)<<header << endl;
+		cout <<"\t\t\t"<<YELLOW"========================================================================================================================================\t\t\t"<<RESET<<endl;
+		cout << setw(84)<<header << endl;
 		for (int i = 0; i < options.size(); i++) {//loop trhough each option 
-			cout <<setw(20)<<"[" <<i + 1<< "]"  << bullet << options[i].first;
+			cout <<setw(84)<<"[" <<i + 1<< "]"  << bullet << options[i].first;
 			if (options[i].second != "") {
 				cout << " : " << options[i].second;
 			}
 			cout << endl;
 		}
-		cout << "===================================================================="<<endl;
-		cout << footer << endl;
+		cout << "\t\t\t"<<YELLOW"========================================================================================================================================\t\t\t"<<RESET<<endl;
+		cout <<"\t\t\t" << footer << endl;
 		
 		selected = _getch() - '0';
 	} while (selected < 1 || selected > options.size());

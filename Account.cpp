@@ -1,7 +1,7 @@
 #include "Account.h"
-
 using namespace std;
 
+//constructor
 Account::Account()
 {
 	account_name = "";
@@ -11,7 +11,7 @@ Account::Account()
 	end_date="";
 }
 
-
+//Add Account
 void Account::addAccount()
 {
 	DBConnection db;
@@ -28,6 +28,7 @@ void Account::addAccount()
 
 }
 
+//Update Account
 void Account::update() 
 {
 	DBConnection db;
@@ -43,6 +44,7 @@ void Account::update()
 
 }
 
+//Update Balance and Budget
 void Account::updateAfterTrans()
 {
 	DBConnection db;
@@ -55,6 +57,7 @@ void Account::updateAfterTrans()
 	db.~DBConnection();
 }
 
+//Remove Account
 void Account::removeAccount() {
 	DBConnection db;
 	db.prepareStatement("DELETE FROM account WHERE UserID=? AND account_name=?");
@@ -64,6 +67,7 @@ void Account::removeAccount() {
 	db.~DBConnection();
 }
 
+//Get data from database
 Account::Account(sql::ResultSet* data)//retrieve data from database
 {
 	account_name = data->getString("account_name");
@@ -73,7 +77,7 @@ Account::Account(sql::ResultSet* data)//retrieve data from database
 	end_date = data->getString("end_date");
 }
 
-
+//Query Account
 vector<Account> Account::findAccount(string userid,string sortColumn,bool ascending) 
 {
 	string query = "SELECT account_name,budget_amount,balance,start_date,end_date FROM `account` WHERE UserID=?"
@@ -130,6 +134,7 @@ vector<Account> Account::selectAccount(string userid) {
 	return Acc;
 }
 
+//Sum all amount of account balance
 double Account::totalAmount()
 {
 	DBConnection db;
@@ -151,6 +156,7 @@ double Account::totalAmount()
 	}
 }
 
+//Edit account
 bool Account::confirmtoEdit(string UserID)
 {
 	DBConnection db;
@@ -177,41 +183,7 @@ bool Account::confirmtoEdit(string UserID)
 	}
 }
 
-double Account::chgeByTrans()
-{
-	if (AccountID == 0)
-	{
-		return 0;
-	}
-	else
-	{
-		double totalExpenses = 0;
-		double totalDeposit = 0;
-		
-		DBConnection db;
-		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type WHERE AccountID=?");
-		db.stmt->setInt(1, AccountID);
-		db.QueryResult();
-		string type = db.res->getString("transaction_type");
-		if (db.res->rowsCount() >= 1)
-		{
-			while (db.res->next())
-			{
-				if (type == "Deposit")
-				{
-					totalDeposit = db.res->getDouble("transaction_amount");
-				}
-				else if (type == "Expenses")
-				{
-					totalExpenses= db.res->getDouble("transaction_amount");
-				}
-			}
-			db.~DBConnection();
-			return totalDeposit-totalExpenses;
-		}
-	}
-}
-
+//Get account information
 void Account::getAccount(string UserID,string account_name)
 {
 	DBConnection db;
@@ -235,6 +207,7 @@ void Account::getAccount(string UserID,string account_name)
 	}
 }
 
+//Get specific data
 void Account::getBlcBdg(string UserID,int AccountID)
 {
 	DBConnection db;
@@ -256,4 +229,41 @@ void Account::getBlcBdg(string UserID,int AccountID)
 	}
 }
 
+//compare deposit and expenses
+double Account::chgeByTrans()
+{
+	if (AccountID == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		double totalExpenses = 0;
+		double totalDeposit = 0;
+
+		DBConnection db;
+		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type WHERE AccountID=?");
+		db.stmt->setInt(1, AccountID);
+		db.QueryResult();
+		string type = db.res->getString("transaction_type");
+		if (db.res->rowsCount() >= 1)
+		{
+			while (db.res->next())
+			{
+				if (type == "Deposit")
+				{
+					totalDeposit = db.res->getDouble("transaction_amount");
+				}
+				else if (type == "Expenses")
+				{
+					totalExpenses = db.res->getDouble("transaction_amount");
+				}
+			}
+			db.~DBConnection();
+			return totalDeposit - totalExpenses;
+		}
+	}
+}
+
+//destructor
 Account::~Account() {}
