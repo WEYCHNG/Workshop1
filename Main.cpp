@@ -51,7 +51,7 @@ string formatAmount(double amount);//to correct into 2 d.p.
 int main()
 {
 	Menu LoginPage;
-	LoginPage.header = "\t\t\tWelcome to money manager !!!";
+	LoginPage.header = "\t\t\t\tWelcome to money manager !!";
 	LoginPage.addOption("Register");
 	LoginPage.addOption("Login");
 	LoginPage.addOption("Exit");
@@ -240,7 +240,7 @@ void UserPage(User user)
 	
 	while (1)
 	{
-		homeMenu.header = "Welcome " + user.UserId;
+		homeMenu.header = "\t\tWelcome " + user.UserId;
 		double totalAmount = account.totalAmount(); // Get the total amount
 		string formattedTotalAmount;
 
@@ -281,7 +281,7 @@ User profile(User user) {
 	User temp = user; // copy the object
 
 	Menu profileMenu;
-	profileMenu.header = "Your profile";
+	profileMenu.header = "\t\tYour profile";
 	profileMenu.addOption("Fisrt Name");
 	profileMenu.addOption("Last Name");
 	profileMenu.addOption("Password");;
@@ -387,7 +387,6 @@ void AccountPage(string UserId)
 	string confirmation;
 
 	Menu homeAccount;
-	homeAccount.header = "Search Option";
 	homeAccount.addOption("Search or refresh Account / Wallet");
 	homeAccount.addOption("Order By ");
 	homeAccount.addOption("Odering ");
@@ -425,7 +424,7 @@ void AccountPage(string UserId)
 			displayString += tmpString.str();
 		}
 
-		homeAccount.header = "Accounts";
+		homeAccount.header = "\t\tAccounts";
 		homeAccount.footer = displayString;
 		switch (homeAccount.prompt())
 		{
@@ -480,7 +479,7 @@ void newAccount(string UserId)
 {
 	Account addAccount;
 	Menu accountMenu;
-	accountMenu.header = "Add Account";
+	accountMenu.header = "\t\tAdd Account";
 	accountMenu.addOption("Account Name");
 	accountMenu.addOption("Balance ");
 	accountMenu.addOption("Budget Amount");
@@ -613,7 +612,7 @@ void modifyAccountPage(string confirmation,string UserId)
 	Account account;
 	
 	Menu mdfAccPage;
-	mdfAccPage.header = "Your account / wallet";
+	mdfAccPage.header = "\t\t\tYour account / wallet";
 	mdfAccPage.addOption("Search account / wallet");
 	mdfAccPage.addOption("Account name: ");
 	mdfAccPage.addOption("Confirm");
@@ -677,7 +676,7 @@ void modifyAccount(Account account)
 	Account temp = account;
 
 	Menu modifyAccMenu;
-	modifyAccMenu.header = "Edit information of account / wallet";
+	modifyAccMenu.header = "\t\t\t\t\tEdit information of account / wallet";
 	modifyAccMenu.addOption("Account name");//1
 	modifyAccMenu.addOption("Balance");//2
 	modifyAccMenu.addOption("Budget amount");//3
@@ -801,7 +800,7 @@ void TransactionPage(string UserId)
 	user.UserId = UserId;
 	string confirmation;
 	Menu transPage;
-	transPage.header = "Transaction Page";
+	transPage.header = "\t\tTransaction Page";
 	transPage.addOption("Create transaction");//Add transaction depend UserID 
 	transPage.addOption("Transaction History");//sorting option in here !!(depent type and date)
 	transPage.addOption("Back to UserPage");
@@ -958,7 +957,7 @@ void transHistory(string UserId)
 	Transaction transaction;
 
 	Menu transHis;
-	transHis.header = "History !";
+	transHis.header = "\tHistory !";
 	transHis.addOption("Search / refresh transaction history");//1
 	transHis.addOption("Order By ");//2
 	transHis.addOption("Odering ");//3
@@ -1079,7 +1078,7 @@ void modifyTrans(Transaction transaction,string UserId)
 	account.UserID = UserId;
 
 	Menu modifyTrans;
-	modifyTrans.header = "Edit transaction";
+	modifyTrans.header = "\t\tEdit transaction";
 	modifyTrans.addOption("Transaction type");//1
 	modifyTrans.addOption("Transaction amount");//2
 	modifyTrans.addOption("Category");//3
