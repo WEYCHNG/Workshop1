@@ -1,4 +1,4 @@
-//System 
+//System header
 //#include <windows.h>
 #include <conio.h>//_getch()
 #include <iomanip>//setw()
@@ -32,23 +32,20 @@ User profile(User user);
 
 //Account table
 void AccountPage(string UserId);
-void newAccount(string UserId);//Add account
-void modifyAccountPage(string confirmation,string UserID);//select accout to modify and select account to make transaction
-void modifyAccount(Account account); //only need userid and accountname
+void newAccount(string UserId);
+void modifyAccountPage(string confirmation,string UserID);
+void modifyAccount(Account account,string UserID); 
 
 //Transaction table
 void TransactionPage(string UserId);
-//void selectAccToTransaction(string UserId, string account_name);
 void newTrans(string UserId,string account_name);
 void transHistory(string UserId);
 void modifyTrans(Transaction transaction,string UserId);
 
-
-
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
 string getCurrentMonthAbbreviation();
-//----------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------------------------------------//
 
 int main()
 {
@@ -163,7 +160,6 @@ void registerAccount() {
 			break;
 		}
 	}
-
 }
 
 //2)Login
@@ -431,9 +427,26 @@ void AccountPage(string UserId)
 				<< "|" << setw(23) << "Budget amount" << "|" << setw(23) << "Start date" << "|" << setw(23) << "End date" <<  "|"<< endl;
 
 			for (int i = 0; i < accounts.size(); i++) {
-				tmpString << setw(12) << accounts[i].account_name << "|" << setw(18) << accounts[i].balance
-					<< "|" << setw(23) << accounts[i].budget_amount << "|" << setw(23) << accounts[i].start_date 
-					<< "|" << setw(23) << accounts[i].end_date<<"|" << endl;
+				tmpString << setw(12) << accounts[i].account_name << "|" << setw(16); 
+				if (accounts[i].balance >0 )
+				{
+					tmpString << GREEN  << accounts[i].balance << WHITE;
+				}
+				else
+				{
+					tmpString << RED <<accounts[i].balance << WHITE;
+				}
+				
+				tmpString << "|" << setw(21); 
+				if(accounts[i].budget_amount >0)
+				{
+					tmpString << GREEN  << accounts[i].budget_amount << WHITE;
+				}
+				else
+				{
+					tmpString << RED  << accounts[i].budget_amount<< WHITE;
+				}
+				tmpString << "|" << setw(23) << accounts[i].start_date << "|" << setw(23) << accounts[i].end_date << "|" << endl;
 			}
 			displayString += tmpString.str();
 		}
@@ -543,7 +556,7 @@ void newAccount(string UserId)
 		{
 		case 1:
 			cout << "Eneter account name (Example: RHB Bank): ";
-			cin >> addAccount.account_name;
+			getline(cin, addAccount.account_name);
 			accountMenu.setValue(0, addAccount.account_name);
 			break;
 		case 2:
@@ -578,7 +591,6 @@ void newAccount(string UserId)
 			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
 			month = abbreviation;
 			cout<<month;
-			_getch();
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
@@ -641,6 +653,7 @@ void newAccount(string UserId)
 			addAccount.UserID = UserId;
 			addAccount.addAccount();
 			cout << CYAN<<"Add sucessful !"<<RESET;
+			_getch();
 		case 7:
 			//return account;//create account page
 			return;
@@ -688,7 +701,7 @@ void modifyAccountPage(string confirmation,string UserId)
 			break;
 		case 2:
 			cout << "Enter the account name to select: ";
-			cin >>account.account_name;
+			getline(cin, account.account_name);
 			mdfAccPage.setValue(1,account.account_name);
 			break;
 		case 3:
@@ -696,7 +709,7 @@ void modifyAccountPage(string confirmation,string UserId)
 			{
 				if (account.confirmtoEdit(UserId))
 				{
-					modifyAccount(account);
+					modifyAccount(account,UserId);
 				}
 				else 
 				{
@@ -719,7 +732,7 @@ void modifyAccountPage(string confirmation,string UserId)
 }
 
 //2)Modify account
-void modifyAccount(Account account)
+void modifyAccount(Account account,string UserID)
 { 
 	Account temp = account;
 
@@ -744,7 +757,8 @@ void modifyAccount(Account account)
 	localtime_s(&now, &current); //populate the now object with data from current
 	string abbreviation = getCurrentMonthAbbreviation();
 
-
+	string accountName = temp.account_name;
+	
 	while(1)
 	{
 		modifyAccMenu.setValue(0, temp.account_name);
@@ -760,8 +774,12 @@ void modifyAccount(Account account)
 		switch (modifyAccMenu.prompt())
 		{
 		case 1:
-			cout << "Enter new account name: ";
-			cin >> temp.account_name;
+			cout << "Eneter new account name (Example: RHB Bank): ";
+			getline(cin, temp.account_name);
+			if (temp.account_name.empty())
+			{
+				temp.account_name = accountName;
+			}
 			break;
 		case 2:
 			cout << "Enter new balance: RM ";
@@ -775,7 +793,6 @@ void modifyAccount(Account account)
 			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
 			month = abbreviation;
 			cout << month;
-			_getch();
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
@@ -809,22 +826,19 @@ void modifyAccount(Account account)
 					temp.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
 				}
 			}
-			else
-			{
-				cout <<RED<< "Invlaid input"<<RESET;
-			}
 			break;
 		case 5:
+			
 			break;
 		case 6:
 			temp = account;
 			break;
 		case 7:
 			account = temp;
+			account.UserID = UserID;
 			account.update();
 			cout << CYAN << "Updated" << RESET;
 			_getch();
-			break;
 		case 8:
 			return ;
 			break;
@@ -855,7 +869,7 @@ void TransactionPage(string UserId)
 	transPage.header = "\t\tTransaction Page";
 	transPage.addOption("Create transaction");//Add transaction depend UserID 
 	transPage.addOption("Transaction History");//sorting option in here !!(depent type and date)
-	transPage.addOption("Back to UserPage");
+	transPage.addOption("Back to User Page");
 
 	while (1)
 	{
@@ -873,7 +887,6 @@ void TransactionPage(string UserId)
 			break;
 		default:
 			break;
-
 		}
 	}
 }
@@ -913,17 +926,16 @@ void newTrans(string UserID, string account_name)
 		homeTrans.setValue(0, account_name);
 		account.getAccount(UserID, account_name);//get account data
 		addTrans.AccountID = account.AccountID;
-		if (Expenses) {
+		if (Expenses) 
+		{
 			addTrans.transaction_type = "Expenses";
 			homeTrans.setValue(1, addTrans.transaction_type);
-			
 		}
 		else
 		{
 			addTrans.transaction_type ="Deposit";
 			homeTrans.setValue(1, addTrans.transaction_type);	
 		}
-
 		homeTrans.header = "Add Transaction";
 		switch (homeTrans.prompt())
 		{
@@ -937,6 +949,11 @@ void newTrans(string UserID, string account_name)
 		case 3:
 			cout << "Enter amount: RM ";
 			cin >> addTrans.transaction_amount;
+			if (addTrans.transaction_amount < 0)
+			{
+				cout << RED"\t\tInvalid ! Amount of transaction is insufficient." RESET;
+				cout << "\nPlease enter amount again: ";
+			}
 			formattedTransAmount = formatAmount(addTrans.transaction_amount);
 			homeTrans.setValue(2, formattedTransAmount);
 			break;
@@ -987,14 +1004,13 @@ void newTrans(string UserID, string account_name)
 			account.budget_amount = tempBudget;
 			addTrans.addTrans();
 			account.updateAfterTrans();
-			return TransactionPage(UserID);
-			break;
+			cout << CYAN"Transaction is create" RESET;
+			_getch();
 		case 9:
 			return TransactionPage(UserID);
 			break;
 		default:
 			break;
-
 		}
 	}
 }
@@ -1019,8 +1035,8 @@ void transHistory(string UserId)
 
 	Menu sortingSubMenu;
 	sortingSubMenu.header = "Select Sort category";
+	sortingSubMenu.addOption("Transaction ID");
 	sortingSubMenu.addOption("Transaction type");
-	sortingSubMenu.addOption("Transaction Amount");
 	sortingSubMenu.addOption("Transaction date time");
 
 	while (1)
@@ -1038,13 +1054,13 @@ void transHistory(string UserId)
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
 			tmpString << fixed << setprecision(2) << setw(5) << "Transaction ID" << "|" << setw(25)
-				<< "Transaction Type" << "|" << setw(25) << "Transaction Amount" << "|" << setw(25)
-				<< "Category" << "|" << setw(25) << "Description" << "|" << setw(25) << "Newbalance" << "|"
-				<< setw(20) << "Transaction date" << "|" << endl;
+				<< "Transaction Type" << "|" << setw(28) << "Transaction Amount" << "|" << setw(20)
+				<< "Category" << "|" << setw(20) << "Description" << "|" << setw(20) << "Newbalance" << "|"
+				<< setw(25) << "Transaction date" << "|" << endl;
 
 			for (int i = 0; i < trans.size(); i++) 
 			{
-				tmpString << setw(10) << trans[i].TransactionID << "|" << setw(25)<< trans[i].transaction_type << "|" << setw(25);
+				tmpString << setw(14) << trans[i].TransactionID << "|" << setw(25)<< trans[i].transaction_type << "|" << setw(26);
 
 				if (trans[i].transaction_type == "Deposit")
 				{
@@ -1052,10 +1068,10 @@ void transHistory(string UserId)
 				}
 				else
 				{
-					tmpString << RED"-" << trans[i].transaction_amount << WHITE;
+					tmpString << RED "-" << trans[i].transaction_amount << WHITE;
 				}
 
-				tmpString << "|" << setw(25) << trans[i].category << "|" << setw(25) << trans[i].description << "|" << setw(25);
+				tmpString << "|" << setw(20) << trans[i].category << "|" << setw(20) << trans[i].description << "|" << setw(18);
 
 				if (trans[i].newbalance < 0)
 				{
@@ -1085,7 +1101,7 @@ void transHistory(string UserId)
 				sortColumn = "TransactionID";
 				break;
 			case 2:
-				sortColumn = "transaction_amount";
+				sortColumn = "transaction_type";
 				break;
 			case 3:
 				sortColumn = "transaction_date";
@@ -1093,6 +1109,7 @@ void transHistory(string UserId)
 			break;
 		case 3:
 			ascending = !ascending;
+			break;
 		case 4:
 			cout << "Enter Transaction ID to edit: ";
 			int transactionId;
@@ -1101,7 +1118,8 @@ void transHistory(string UserId)
 			transHis.setValue(3,to_string(transaction.TransactionID));
 			break;
 		case 5:
-			if (transaction.confirmToUpdate(transaction.TransactionID)) {
+			if (transaction.confirmToUpdate(transaction.TransactionID)) 
+			{
 				modifyTrans(transaction,UserId);
 			}
 			else 
@@ -1109,6 +1127,7 @@ void transHistory(string UserId)
 				cout << RED << "\tInvalid account !" << CYAN << " Please press enter to continues..." << RESET;
 				_getch();
 			}
+			break;
 		case 6:
 			return;
 			break;
@@ -1149,6 +1168,7 @@ void modifyTrans(Transaction transaction,string UserId)
 	string accountName;
 	double tempAmount=0;
 	double tempBudget=0;
+	double initialBalance;
 	double tempnewBalance=0;
 	double tempTransAmount=0;
 	double oldTransAmount = 0;
@@ -1163,11 +1183,14 @@ void modifyTrans(Transaction transaction,string UserId)
 	if (temp.transaction_type == "Expenses")
 	{
 		account.balance = oldTransAmount + oldNewBalance;//get original balance
+
 		account.budget_amount += oldTransAmount;//get original budget
+		initialBalance = account.balance;
 	}
 	else if (temp.transaction_type == "Deposit")
 	{
 		account.balance = oldNewBalance - oldTransAmount;
+		initialBalance = account.balance;
 	}
 
 	while (1)
@@ -1203,6 +1226,11 @@ void modifyTrans(Transaction transaction,string UserId)
 		case 2:
 			cout << "Enter amount: RM ";
 			cin >> temp.transaction_amount;
+			if (temp.transaction_amount < 0)
+			{
+				cout << RED"\t\tInvalid ! Amount of transaction is insufficient." RESET;
+				cout << "\nPlease enter amount again: ";
+			}
 			break;
 		case 3:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
@@ -1218,27 +1246,19 @@ void modifyTrans(Transaction transaction,string UserId)
 			{
 				temp.description = "NULL";
 			}
-			break;
 		case 5:
-			if (temp.transaction_type == "Expenses")
-			{
-				tempAmount = account.balance - temp.transaction_amount;
+			if (temp.transaction_type == "Expenses") {
+				tempAmount = initialBalance - temp.transaction_amount;
 				tempBudget = account.budget_amount - temp.transaction_amount;
-
-				temp.newbalance = account.balance - temp.transaction_amount;
-				account.balance = tempAmount;
-				account.budget_amount = tempBudget;
-
 			}
-			else
-			{
-				tempAmount = account.balance + temp.transaction_amount;
+			else {
+				tempAmount = initialBalance + temp.transaction_amount;
 				tempBudget = account.budget_amount;
-
-				temp.newbalance = tempAmount;
-				account.balance = tempAmount;
-				account.budget_amount = tempBudget;
 			}
+
+			temp.newbalance = tempAmount;
+			account.balance = tempAmount;
+			account.budget_amount = tempBudget;
 			break;
 		case 6:
 			temp = transaction;
@@ -1247,7 +1267,8 @@ void modifyTrans(Transaction transaction,string UserId)
 			transaction = temp;
 			transaction.updateTrans(transaction.TransactionID);
 			account.updateAfterTrans();
-			break;
+			cout << CYAN"Updated !" RESET;
+			_getch();
 		case 8:
 			return;
 			break;
@@ -1265,7 +1286,6 @@ void modifyTrans(Transaction transaction,string UserId)
 			break;
 		default:
 			break;
-
 		}
 	}
 }
