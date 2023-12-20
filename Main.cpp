@@ -1169,6 +1169,7 @@ void modifyTrans(Transaction transaction,string UserId)
 	double tempAmount=0;
 	double tempBudget=0;
 	double initialBalance;
+	double initialBudget;
 	double tempnewBalance=0;
 	double tempTransAmount=0;
 	double oldTransAmount = 0;
@@ -1184,8 +1185,9 @@ void modifyTrans(Transaction transaction,string UserId)
 	{
 		account.balance = oldTransAmount + oldNewBalance;//get original balance
 
-		account.budget_amount += oldTransAmount;//get original budget
+		account.budget_amount = account.budget_amount + oldTransAmount;//get original budget
 		initialBalance = account.balance;
+		initialBudget = account.budget_amount;
 	}
 	else if (temp.transaction_type == "Deposit")
 	{
@@ -1249,7 +1251,7 @@ void modifyTrans(Transaction transaction,string UserId)
 		case 5:
 			if (temp.transaction_type == "Expenses") {
 				tempAmount = initialBalance - temp.transaction_amount;
-				tempBudget = account.budget_amount - temp.transaction_amount;
+				tempBudget = initialBudget - temp.transaction_amount;
 			}
 			else {
 				tempAmount = initialBalance + temp.transaction_amount;
@@ -1259,9 +1261,11 @@ void modifyTrans(Transaction transaction,string UserId)
 			temp.newbalance = tempAmount;
 			account.balance = tempAmount;
 			account.budget_amount = tempBudget;
+
 			break;
 		case 6:
-			temp = transaction;
+			//temp = transaction;
+
 			break;
 		case 7:
 			transaction = temp;
@@ -1278,7 +1282,6 @@ void modifyTrans(Transaction transaction,string UserId)
 			confirm = _getch();
 			if (confirm == 'Y' || confirm == 'y') 
 			{
-				account.getBlcBdg(UserId, account.AccountID);
 				transaction.deleteTrans(transaction.TransactionID);
 				account.updateAfterTrans();
 				return;
