@@ -6,6 +6,7 @@
 #include <sstream>//set precision
 #include <iostream>
 #include <chrono>//waiting
+#include <regex>//checking alphabetical
 
 //Project header
 #include "User.h"
@@ -45,6 +46,10 @@ void modifyTrans(Transaction transaction,string UserId);
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
 string getCurrentMonthAbbreviation();
+bool isValidFirstName(const string& firstName);
+bool isValidLastName(const string& lastName);
+bool isValidPassword(const string& password);
+bool isValidEmail(const string& email);
 //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
 int main()
@@ -73,6 +78,69 @@ int main()
 	}
 }
 
+bool isValidFirstName(const string& firstName) {
+	// Regular expression to match only alphabetic characters
+	regex pattern("^[a-zA-Z]+$");
+
+	// Check if the first name matches the pattern
+	return regex_match(firstName, pattern);
+}
+
+bool isValidLastName(const string& lastName) {
+	// Regular expression to match only alphabetic characters with at least one space
+	regex pattern("^[a-zA-Z]+( [a-zA-Z]+)+$");
+
+	// Check if the last name matches the pattern
+	return regex_match(lastName, pattern);
+}
+
+bool isValidPassword(const string& password) {
+	// Regular expressions for character classes
+	regex upper("(?=.*[A-Z])");
+	regex lower("(?=.*[a-z])");
+	regex digit("(?=.*[0-9])");
+	regex special("(?=.*[^A-Za-z0-9])");
+
+	// Check the length
+	if (password.length() < 8) {
+		cout << RED"\n\t\tPassword must be at least 8 characters long." RESET<< std::endl;
+		_getch();
+		return false;
+	}
+
+	// Check for required character classes
+	if (!regex_search(password, upper)) {
+		cout << RED"\n\t\tPassword must contain at least one uppercase letter." RESET << std::endl;
+		_getch();
+		return false;
+	}
+	if (!regex_search(password, lower)) {
+		cout << RED"\n\t\tPassword must contain at least one lowercase letter." RESET << std::endl;
+		_getch();
+		return false;
+	}
+	if (!std::regex_search(password, digit)) {
+		cout << RED"\n\t\tPassword must contain at least one digit." RESET<< std::endl;
+		_getch();
+		return false;
+	}
+	if (!std::regex_search(password, special)) {
+		cout << RED"\n\t\tPassword must contain at least one special character." RESET << std::endl;
+		_getch();
+		return false;
+	}
+	// Password meets all criteria
+	return true;
+}
+
+bool isValidEmail(const string& email) {
+	// Regular expression pattern for email validation
+	regex pattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
+
+	// Check if the email matches the pattern
+	return std::regex_match(email, pattern);
+}
+
 //LOGIN PAGE
 //1)Register
 void registerAccount() {
@@ -84,13 +152,13 @@ void registerAccount() {
 	cnMenu.addOption("UserId");
 	cnMenu.addOption("First Name");
 	cnMenu.addOption("Last Name");
-	cnMenu.addOption("Password");
+	cnMenu.addOption("Password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/')");
 	cnMenu.addOption("Email");
-	cnMenu.addOption("Phone Number (01X-XXXXXXX)");
+	cnMenu.addOption("Phone Number (01157426036)");
 	cnMenu.addOption("Confirm");
 	cnMenu.addOption("Back to login page");
 
-	string tmpinput;
+	string firstName, lastName, password, emailAddress;
 	while (1) {
 
 		switch (cnMenu.prompt()) {
@@ -100,30 +168,57 @@ void registerAccount() {
 			cnMenu.setValue(0, newacc.UserId);
 			break;
 		case 2:
-			cout << "Enter First Name: ";
-			cin >> newacc.first_name;
-			cnMenu.setValue(1, newacc.first_name);
+			cout << "Enter first name: ";
+			getline(cin, firstName);
+			//Validation firstName
+			if (isValidFirstName(firstName)) {
+				newacc.first_name = firstName;
+				cnMenu.setValue(1, newacc.first_name);
+			}
+			else {
+				std::cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET<< endl;
+				_getch();
+			}
 			break;
 		case 3:
-			cout << "Enter Last Name: ";
-			cin >> newacc.last_name;
-			cnMenu.setValue(2, newacc.last_name);
+			cout << "Enter last name: ";
+			getline(cin,lastName);
+			//Validation lastName
+			if (isValidLastName(lastName)) {
+				newacc.last_name = lastName;
+				cnMenu.setValue(2, newacc.last_name);
+			}
+			else {
+				std::cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
+				_getch();
+			}	
 			break;
 		case 4:
 			cout << "Enter password: ";
-			cin >> tmpinput;
-			if (tmpinput.length() < 6) {
-				cout << "Password must be at least 6 character long";
-				_getch();
+			getline(cin, password);
+
+			// Validate password
+			if (isValidPassword(password)) {
+				newacc.password = password;
+				cnMenu.setValue(3, newacc.password);
 			}
 			else {
-				newacc.password = tmpinput;
-				cnMenu.setValue(3, newacc.password);
+				cout << RED"\n\t\tInvalid password." RESET << std::endl;
+				_getch();
 			}
 			break;
 		case 5:
 			cout << "Enter email: ";
-			cin >> newacc.email;
+			getline(cin, emailAddress);
+
+			// Validate email address
+			if (isValidEmail(emailAddress)) {
+				newacc.email = emailAddress;
+				cnMenu.setValue(4, newacc.email);
+			}
+			else {
+				std::cout << RED"\n\t\tInvalid email address." RESET << std::endl;
+			}
 			cnMenu.setValue(4, newacc.email);
 			break;
 		case 6:
@@ -161,6 +256,7 @@ void registerAccount() {
 		}
 	}
 }
+
 
 //2)Login
 void loginMenu()
@@ -675,7 +771,7 @@ void modifyAccountPage(string confirmation,string UserId)
 	Menu mdfAccPage;
 	mdfAccPage.header = "\t\t\tYour account / wallet";
 	mdfAccPage.addOption("Search account / wallet");
-	mdfAccPage.addOption("Account name: ");
+	mdfAccPage.addOption("Account name");
 	mdfAccPage.addOption("Confirm");
 	mdfAccPage.addOption("Back");
 
