@@ -170,6 +170,10 @@ void registerAccount() {
 		case 2:
 			cout << "Enter first name: ";
 			getline(cin, firstName);
+			if (firstName.empty())
+			{
+				getline(cin, firstName);
+			}
 			//Validation firstName
 			if (isValidFirstName(firstName)) {
 				newacc.first_name = firstName;
@@ -183,6 +187,10 @@ void registerAccount() {
 		case 3:
 			cout << "Enter last name: ";
 			getline(cin,lastName);
+			if (lastName.empty())
+			{
+				getline(cin, lastName);
+			}
 			//Validation lastName
 			if (isValidLastName(lastName)) {
 				newacc.last_name = lastName;
@@ -196,7 +204,10 @@ void registerAccount() {
 		case 4:
 			cout << "Enter password: ";
 			getline(cin, password);
-
+			if (password.empty())
+			{
+				getline(cin, password);
+			}
 			// Validate password
 			if (isValidPassword(password)) {
 				newacc.password = password;
@@ -210,14 +221,17 @@ void registerAccount() {
 		case 5:
 			cout << "Enter email: ";
 			getline(cin, emailAddress);
-
+			if (emailAddress.empty())
+			{
+				getline(cin, emailAddress);
+			}
 			// Validate email address
 			if (isValidEmail(emailAddress)) {
 				newacc.email = emailAddress;
 				cnMenu.setValue(4, newacc.email);
 			}
 			else {
-				std::cout << RED"\n\t\tInvalid email address." RESET << std::endl;
+				cout << RED"\n\t\tInvalid email address." RESET << std::endl;
 			}
 			cnMenu.setValue(4, newacc.email);
 			break;
@@ -379,58 +393,75 @@ User profile(User user) {
 	profileMenu.header = "\t\tYour profile";
 	profileMenu.addOption("Fisrt Name");
 	profileMenu.addOption("Last Name");
-	profileMenu.addOption("Password");;
+	profileMenu.addOption("Password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/')");;
 	profileMenu.addOption("Phone Number (Exp:01157426036)");
 	profileMenu.addOption("Reset");
 	profileMenu.addOption("Save");
 	profileMenu.addOption("Back");
 	profileMenu.addOption("Delete Account");
 
+	string firstName;
+	string lastName;
+	string password;
+	firstName = temp.first_name;
+	lastName = temp.last_name;
 	while (1) {
 		profileMenu.setValue(0, temp.first_name);
 		profileMenu.setValue(1, temp.last_name);
 		profileMenu.setValue(2, temp.password);
 		profileMenu.setValue(3, temp.phone_number);
-		
-		string firstName;
-		string lastName;
-		string password;
-		firstName = temp.first_name;
-		lastName = temp.last_name;
-
+	
 		switch (profileMenu.prompt())
 		{
 		case 1:
-			cout << "Enter First Name:";
+			cout << "Enter first name:";
 			getline(cin, temp.first_name);
 			if (temp.first_name.empty())
 			{
+				getline(cin, temp.first_name);
+			}
+			if (isValidFirstName(temp.first_name)) {
+				profileMenu.setValue(0, temp.first_name);
+			}
+			else {
+				std::cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET << endl;
 				temp.first_name = firstName;
+				_getch();
 			}
 			break;
 		case 2:
-			cout << "Enter Last Name:";
+			cout << "Enter last name:";
 			getline(cin,temp.last_name);
 			if (temp.last_name.empty())
 			{
+				getline(cin, temp.last_name);
+			}
+			//Validation lastName
+			if (isValidLastName(temp.last_name)) {
+				profileMenu.setValue(2, temp.last_name);
+				
+			}
+			else {
+				std::cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
 				temp.last_name = lastName;
+				_getch();
 			}
 			break;
 		case 3:
-			cout << "Enter new password:";
-			cin >> temp.password;
+			cout << "Enter new password: ";
 			cin >> password;
-			if (password.length() < 6) {
-				cout << RED"\t\tPassword must be at least 6 character long" RESET;
-				_getch();
-			}
-			else {
+			// Validate password
+			if (isValidPassword(password)) {
 				temp.password = password;
 				profileMenu.setValue(3, temp.password);
 			}
+			else {
+				cout << RED"\n\t\tInvalid password." RESET << std::endl;
+				_getch();
+			}
 			break;
 		case 4:
-			cout << "Enter new phone number:";
+			cout << "Enter new phone number: ";
 			while (true) 
 			{
 				cin>>temp.phone_number;
@@ -653,6 +684,10 @@ void newAccount(string UserId)
 		case 1:
 			cout << "Eneter account name (Example: RHB Bank): ";
 			getline(cin, addAccount.account_name);
+			if (addAccount.account_name.empty())
+			{
+				getline(cin, addAccount.account_name);
+			}
 			accountMenu.setValue(0, addAccount.account_name);
 			break;
 		case 2:
@@ -740,7 +775,8 @@ void newAccount(string UserId)
 			}
 			else
 			{
-				cout<<"Invlaid input";
+				cout << RED"\t\tInvlaid input" RESET;
+				_getch();
 			}
 			break;
 		case 5:
@@ -748,7 +784,7 @@ void newAccount(string UserId)
 		case 6:
 			addAccount.UserID = UserId;
 			addAccount.addAccount();
-			cout << CYAN<<"Add sucessful !"<<RESET;
+			cout << CYAN<<"\t\tAdd sucessful !"<<RESET;
 			_getch();
 		case 7:
 			//return account;//create account page
@@ -963,8 +999,8 @@ void TransactionPage(string UserId)
 	string confirmation;
 	Menu transPage;
 	transPage.header = "\t\tTransaction Page";
-	transPage.addOption("Create transaction");//Add transaction depend UserID 
-	transPage.addOption("Transaction History");//sorting option in here !!(depent type and date)
+	transPage.addOption("Create transaction");
+	transPage.addOption("Transaction History");
 	transPage.addOption("Back to User Page");
 
 	while (1)
@@ -1055,14 +1091,22 @@ void newTrans(string UserID, string account_name)
 			break;
 		case 4:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
-			cin >> addTrans.category;
+			getline(cin,addTrans.category);
+			if (addTrans.category.empty())
+			{
+				getline(cin, addTrans.category);
+			}
 			homeTrans.setValue(3, addTrans.category);
 			break;
 		case 5:
 			cout << "Description: ";
 			if (addTrans.transaction_type == "Expenses")
 			{
-				cin >> addTrans.description;
+				getline(cin, addTrans.description);
+				if (addTrans.description.empty())
+				{
+					getline(cin, addTrans.description);
+				}
 				homeTrans.setValue(4, addTrans.description);
 			}
 			else 
@@ -1360,8 +1404,7 @@ void modifyTrans(Transaction transaction,string UserId)
 
 			break;
 		case 6:
-			//temp = transaction;
-
+			temp = transaction;
 			break;
 		case 7:
 			transaction = temp;
