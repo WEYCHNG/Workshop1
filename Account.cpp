@@ -229,8 +229,7 @@ void Account::getBlcBdg(string UserID,int AccountID)
 	}
 }
 
-//compare deposit and expenses
-double Account::chgeByTrans()
+/*double Account::chgeByTrans()
 {
 	if (AccountID == 0)
 	{
@@ -242,7 +241,7 @@ double Account::chgeByTrans()
 		double totalDeposit = 0;
 
 		DBConnection db;
-		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type WHERE AccountID=?");
+		db.prepareStatement("SELECT SUM(transaction_amount) as transaction_amount,transaction_type FROM transaction GROUP BY transaction_type ");
 		db.stmt->setInt(1, AccountID);
 		db.QueryResult();
 		string type = db.res->getString("transaction_type");
@@ -264,6 +263,7 @@ double Account::chgeByTrans()
 		}
 	}
 }
+*/
 
 //destructor
 Account::~Account() {}

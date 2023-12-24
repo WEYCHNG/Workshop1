@@ -27,8 +27,8 @@ public:
 	void getAccount(string UserId,string account_name);
 	void getBlcBdg(string UserId,int AccountID);
 	double totalAmount();
-	double chgeByTrans();
-
+	double chgeByTrans(string UserID);
+	
 	~Account();
 };
 

@@ -120,4 +120,89 @@ void Transaction::deleteTrans(int TransactionID)
 	db.~DBConnection();
 }
 
+int Transaction::totalTimesOfTrans(string UserId)
+{
+	DBConnection db;
+	int totalTrans = -1;
+	db.prepareStatement("SELECT COUNT(TransactionID) as totaltrans FROM transaction JOIN account USING (AccountID) "
+		"WHERE UserID=? AND transaction_date >= DATE_FORMAT(NOW(), '%Y-%m-01')"
+		"AND transaction_date < DATE_ADD(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH);");
+	db.stmt->setString(1, UserId);
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		totalTrans = db.res->getDouble("totaltrans");
+	}
+	db.~DBConnection();
+	return totalTrans;
+}
+
+//Can check previous 7 days transaction amount
+double Transaction::transAmount(string UserId)
+{
+	DBConnection db;
+	double totalTransaction = 0;
+	db.prepareStatement("SELECT SUM(transaction_amount) AS totaltransaction "
+		"FROM transaction "
+		"JOIN account USING(AccountID) "
+		"WHERE UserID = ? "
+		"AND transaction_date >= DATE_SUB(DATE(NOW()), INTERVAL 1 WEEK) "
+		"AND transaction_date < DATE(NOW());");
+	db.stmt->setString(1, UserId);
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		totalTransaction = db.res->getDouble("totaltransaction");
+	}
+	db.~DBConnection();
+	return totalTransaction;
+}
+
+//Can check 1 month transaction amount
+double Transaction::totalTransactionAmount(string UserId)
+{
+	DBConnection db;
+	double totalTransaction = 0;
+	db.prepareStatement("SELECT SUM(transaction_amount) AS totaltransaction FROM transaction JOIN account USING(AccountID)"
+		"WHERE UserID = ? AND transaction_date >= DATE_FORMAT(NOW(), '%Y-%m-01')"
+		"AND transaction_date < DATE_ADD(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH); ");
+	db.stmt->setString(1, UserId);
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		totalTransaction = db.res->getDouble("totaltransaction");
+	}
+	db.~DBConnection();
+	return totalTransaction;
+}
+
+//Can check 1 month net transaction amount
+double Transaction::netTrans(string UserId)
+{
+	DBConnection db;
+	double netTrans = 0;
+	db.prepareStatement("SELECT "
+		"SUM(CASE WHEN transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS total_transfer_in, "
+		"SUM(CASE WHEN transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS total_transfer_out, "
+		"SUM(CASE WHEN transaction_type = 'Deposit' THEN transaction_amount ELSE -transaction_amount END) AS net_transfer "
+		"FROM transaction "
+		"JOIN account USING(AccountID) "
+		"WHERE UserID = ? "
+		"AND transaction_date >= DATE_FORMAT(NOW(), '%Y-%m-01') " // Start of current month
+		"AND transaction_date < DATE_ADD(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH);"); // Start of next month
+	db.stmt->setString(1, UserId);
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		netTrans = db.res->getDouble("net_transfer");
+	}
+	db.~DBConnection();
+	return netTrans;
+}
+
+
 Transaction::~Transaction() {}

@@ -43,6 +43,10 @@ void newTrans(string UserId,string account_name);
 void transHistory(string UserId);
 void modifyTrans(Transaction transaction,string UserId);
 
+//Report and analysis
+void statistic(string UserId);
+
+
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
 string getCurrentMonthAbbreviation();
@@ -373,7 +377,7 @@ void UserPage(User user)
 			TransactionPage(user.UserId);
 			break;
 		case 4:
-			//Analysis
+			statistic(user.UserId);
 			break;
 		case 5:
 			main();
@@ -1429,5 +1433,72 @@ void modifyTrans(Transaction transaction,string UserId)
 		default:
 			break;
 		}
+	}
+}
+
+void statistic(string UserId)
+{
+	int totalTrans = -1;
+	totalTrans = Transaction::totalTimesOfTrans(UserId);
+
+	double netTrans = 0;
+	netTrans = Transaction::netTrans(UserId);
+
+	double previousTransAmount = 0;
+	previousTransAmount = Transaction::transAmount(UserId);
+
+	double totalTransAmount = 0;
+	totalTransAmount = Transaction::totalTransactionAmount(UserId);
+
+	Menu TH;
+	TH.header = "\t\t\tStatistic per month";
+	TH.addOption("Number of transaction");
+	TH.addOption("Net transaction");
+	TH.addOption("Total transaction amount");
+	TH.addOption("Back to User Page");
+
+	Menu SubTA;
+	SubTA.addOption("One month");
+	SubTA.addOption("Previous 7 days");
+
+	string formattedBalance;
+	string formattedNetTrans;
+	string formattedPrevious;
+	//Format the balance amount using formatAmount function
+
+	formattedPrevious = formatAmount(previousTransAmount);
+	formattedNetTrans = formatAmount(netTrans);
+	formattedBalance = formatAmount(totalTransAmount);
+	
+	
+	while (1)
+	{
+		TH.setValue(0,to_string(totalTrans));
+		TH.setValue(1, formattedNetTrans);
+		
+		switch(TH.prompt())
+		{
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			switch (SubTA.prompt())
+			{
+			case 1:
+				TH.setValue(2, formattedBalance);
+				break;
+			case 2:
+				TH.setValue(2, formattedPrevious);
+				break;
+			}
+			break;
+		case 4:
+			return;
+			break;
+		default:
+			break;
+		}
+
 	}
 }
