@@ -204,5 +204,85 @@ double Transaction::netTrans(string UserId)
 	return netTrans;
 }
 
+//get total deposit
+double* Transaction::totalDeposit(string UserId)
+{
+	DBConnection db;
+	double* monthOfDeposit = new double[6] { 0, 0, 0, 0, 0, 0 };
+	db.prepareStatement("SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 10 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_October,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 11 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_November,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 12 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_December,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 1 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_Jan,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 2 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_Feb,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 3 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_Mar"
+		"FROM transaction JOIN account USING(AccountID) WHERE UserID = ? AND((YEAR(transaction_date) = 2023 AND MONTH(transaction_date) BETWEEN 10 AND 12)"
+		"OR(YEAR(transaction_date) = 2024 AND MONTH(transaction_date) BETWEEN 1 AND 3)) GROUP BY MONTH(transaction_date) ORDER BY MONTH(transaction_date) ASC;");
+	db.stmt->setString(1, UserId);
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		monthOfDeposit[0] = db.res->getDouble("transafer_in_October");
+		monthOfDeposit[1] = db.res->getDouble("transafer_in_November");
+		monthOfDeposit[2] = db.res->getDouble("transafer_in_December");
+		monthOfDeposit[3] = db.res->getDouble("transafer_in_Jan");
+		monthOfDeposit[4] = db.res->getDouble("transafer_in_Feb");
+		monthOfDeposit[5] = db.res->getDouble("transafer_in_Mar");
+	}
+	db.~DBConnection();
+	return monthOfDeposit;
+}
+
+double* Transaction::totalExpenses(string UserId)
+{
+	DBConnection db;
+	double* monthOfExpenses = new double[6] { 0, 0, 0, 0, 0, 0 };
+	db.prepareStatement("SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 10 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_October,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 11 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_November,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 12 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_December,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 1 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_Jan,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 2 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_Feb,"
+		"SUM(CASE WHEN MONTH(transaction_date) = 3 AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out_Mar"
+		"FROM transaction JOIN account USING(AccountID) WHERE UserID = ? AND((YEAR(transaction_date) = 2023 AND MONTH(transaction_date) BETWEEN 10 AND 12)"
+		"OR(YEAR(transaction_date) = 2024 AND MONTH(transaction_date) BETWEEN 1 AND 3)) GROUP BY MONTH(transaction_date) ORDER BY MONTH(transaction_date) ASC;");
+	db.stmt->setString(1, UserId);
+	
+	db.QueryResult();
+
+	while (db.res->next())
+	{
+		monthOfExpenses[0] = db.res->getDouble("transafer_out_October");
+		monthOfExpenses[1] = db.res->getDouble("transafer_out_November");
+		monthOfExpenses[2] = db.res->getDouble("transafer_out_December");
+		monthOfExpenses[3] = db.res->getDouble("transafer_out_Jan");
+		monthOfExpenses[4] = db.res->getDouble("transafer_out_Feb");
+		monthOfExpenses[5] = db.res->getDouble("transafer_out_Mar");
+	}
+
+	db.~DBConnection();
+	return monthOfExpenses;
+}
+
+//compare two years
+
+/*SELECT 
+    YEAR(transaction_date) AS year,
+    MONTH(transaction_date) AS month,
+    SUM(CASE WHEN YEAR(transaction_date) = 2022 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_2022,
+    SUM(CASE WHEN YEAR(transaction_date) = 2023 AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_2023
+FROM 
+    transaction
+JOIN 
+    account USING(AccountID)
+WHERE 
+    UserID = "EugeneTeow"
+    AND (YEAR(transaction_date) = 2022 OR YEAR(transaction_date) = 2023) -- Years to compare
+GROUP BY 
+    YEAR(transaction_date), MONTH(transaction_date)
+ORDER BY 
+    YEAR(transaction_date), MONTH(transaction_date) ASC;*/
+
 
 Transaction::~Transaction() {}
