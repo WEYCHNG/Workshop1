@@ -838,6 +838,10 @@ void modifyAccountPage(string confirmation,string UserId)
 		case 2:
 			cout << "Enter the account name to select: ";
 			getline(cin, account.account_name);
+			if (account.account_name.empty())
+			{
+				getline(cin, account.account_name);
+			}
 			mdfAccPage.setValue(1,account.account_name);
 			break;
 		case 3:
@@ -1085,10 +1089,11 @@ void newTrans(string UserID, string account_name)
 		case 3:
 			cout << "Enter amount: RM ";
 			cin >> addTrans.transaction_amount;
-			if (addTrans.transaction_amount < 0)
+			if (addTrans.transaction_amount <= 0)
 			{
 				cout << RED"\t\tInvalid ! Amount of transaction is insufficient." RESET;
 				cout << "\nPlease enter amount again: ";
+				cin >> addTrans.transaction_amount;
 			}
 			formattedTransAmount = formatAmount(addTrans.transaction_amount);
 			homeTrans.setValue(2, formattedTransAmount);
@@ -1372,10 +1377,11 @@ void modifyTrans(Transaction transaction,string UserId)
 		case 2:
 			cout << "Enter amount: RM ";
 			cin >> temp.transaction_amount;
-			if (temp.transaction_amount < 0)
+			if (temp.transaction_amount <=0)
 			{
 				cout << RED"\t\tInvalid ! Amount of transaction is insufficient." RESET;
 				cout << "\nPlease enter amount again: ";
+				cin >> temp.transaction_amount;
 			}
 			break;
 		case 3:
@@ -1452,20 +1458,21 @@ void statistic(string UserId)
 
 	Menu TH;
 	TH.header = "\t\t\tStatistic per month";
-	TH.addOption("Number of transaction");
-	TH.addOption("Net transaction");
-	TH.addOption("Total transaction amount");
+	TH.addOption(CYAN"Number of transaction" RESET);
+	TH.addOption(CYAN"Net transaction amount" RESET);
+	TH.addOption(CYAN"Total transaction amount" RESET);
+	TH.addOption("Graph");
 	TH.addOption("Back to User Page");
 
 	Menu SubTA;
-	SubTA.addOption("One month");
+	SubTA.addOption("This month");
 	SubTA.addOption("Previous 7 days");
 
 	string formattedBalance;
 	string formattedNetTrans;
 	string formattedPrevious;
-	//Format the balance amount using formatAmount function
 
+	//Format the balance amount using formatAmount function
 	formattedPrevious = formatAmount(previousTransAmount);
 	formattedNetTrans = formatAmount(netTrans);
 	formattedBalance = formatAmount(totalTransAmount);
@@ -1475,13 +1482,8 @@ void statistic(string UserId)
 	{
 		TH.setValue(0,to_string(totalTrans));
 		TH.setValue(1, formattedNetTrans);
-		
 		switch(TH.prompt())
 		{
-		case 1:
-			break;
-		case 2:
-			break;
 		case 3:
 			switch (SubTA.prompt())
 			{
@@ -1494,11 +1496,12 @@ void statistic(string UserId)
 			}
 			break;
 		case 4:
+			break;
+		case 5:
 			return;
 			break;
 		default:
 			break;
 		}
-
 	}
 }
