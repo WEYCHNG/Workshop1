@@ -156,9 +156,9 @@ void registerAccount() {
 	cnMenu.addOption("UserId");
 	cnMenu.addOption("First Name");
 	cnMenu.addOption("Last Name");
-	cnMenu.addOption("Password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/')");
+	cnMenu.addOption("Password");
 	cnMenu.addOption("Email");
-	cnMenu.addOption("Phone Number (01157426036)");
+	cnMenu.addOption("Phone Number");
 	cnMenu.addOption("Confirm");
 	cnMenu.addOption("Back to login page");
 
@@ -206,7 +206,7 @@ void registerAccount() {
 			}	
 			break;
 		case 4:
-			cout << "Enter password: ";
+			cout << "Enter password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/'): ";
 			getline(cin, password);
 			if (password.empty())
 			{
@@ -240,7 +240,7 @@ void registerAccount() {
 			cnMenu.setValue(4, newacc.email);
 			break;
 		case 6:
-			cout << "Enter Phone Number: ";
+			cout << "Enter Phone Number (01157426036): ";
 			while (true)
 			{
 				cin >> newacc.phone_number;
@@ -397,8 +397,8 @@ User profile(User user) {
 	profileMenu.header = "\t\tYour profile";
 	profileMenu.addOption("Fisrt Name");
 	profileMenu.addOption("Last Name");
-	profileMenu.addOption("Password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/')");;
-	profileMenu.addOption("Phone Number (Exp:01157426036)");
+	profileMenu.addOption("Password");;
+	profileMenu.addOption("Phone Number");
 	profileMenu.addOption("Reset");
 	profileMenu.addOption("Save");
 	profileMenu.addOption("Back");
@@ -452,7 +452,7 @@ User profile(User user) {
 			}
 			break;
 		case 3:
-			cout << "Enter new password: ";
+			cout << "Enter new password (must include'A-Z''a-z''0-9''!@#$%^&*()-_+=<>?/'): ";
 			cin >> password;
 			// Validate password
 			if (isValidPassword(password)) {
@@ -465,7 +465,7 @@ User profile(User user) {
 			}
 			break;
 		case 4:
-			cout << "Enter new phone number: ";
+			cout << "Enter new phone number (Exp:01157426036): ";
 			while (true) 
 			{
 				cin>>temp.phone_number;
@@ -554,7 +554,7 @@ void AccountPage(string UserId)
 		if (displayString == "") {
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5)  << "Account Name" << "|" << setw(18) << "Balance"
+			tmpString << fixed << setprecision(2)<< setw(5)  << "Account Name" << "|" << setw(18) << "Balance"
 				<< "|" << setw(23) << "Budget amount" << "|" << setw(23) << "Start date" << "|" << setw(23) << "End date" <<  "|"<< endl;
 
 			for (int i = 0; i < accounts.size(); i++) {
@@ -1518,9 +1518,9 @@ void graph(string UserId)
 	string Deposit, Expenses,stars;
 	Menu GPH;
 	GPH.header="\tGraph";
-	GPH.addOption("Month");
-	GPH.addOption("Year");
-	GPH.addOption("Confirm");
+	GPH.addOption("Deposit Versus Expenses in same month");
+	GPH.addOption("Deposit Versus Expenses between two different year");
+	GPH.addOption("Expenses Versus remainder budget in same month");
 	GPH.addOption("Back to statistic");
 	
 	while(1)
@@ -1528,40 +1528,39 @@ void graph(string UserId)
 		switch (GPH.prompt())
 		{
 		case 1:
-			
-			break;
-		case 2:
-			
-			break;
-		case 3:
-
-			cout << "Enter year (Example: 2023,2024...): ";
-			cin >> y;
 			cout << "Enter month (Example: Jan=1,Feb=2...): ";
 			cin >> x;
+			cout << "Enter year (Example: 2023,2024...): ";
+			cin >> y;
 			DPT = Transaction::totalDeposit(UserId, x, y);
 			EPS = Transaction::totalExpenses(UserId, x, y);
+			cout << "\n\n";
 			number1 = (int)(DPT / 200);
 			number2 = (int)(EPS / 200);
-			
+
 			for (int i = 0; i < number1; i++)
 			{
 				stars += "*";
 			}
 			Deposit += stars;
 			stars = "";
-			cout << "Deposit:   " << CYAN<<Deposit<<RESET;
-			
+			cout << "Date(MM-YYYY): " <<YELLOW<< x << "-" << y<<RESET;
+			cout << "\nDeposit:   " << CYAN << Deposit << RESET;
+
 			for (int i = 0; i < number2; i++)
 			{
 				stars += "*";
 			}
 			Expenses += stars;
 			stars = "";
-			cout << "\nExpeneses: " <<CYAN<< Expenses<<RESET;
-			
+			cout << "\nExpeneses: " << CYAN << Expenses << RESET;
 			cout << endl;
 			_getch();
+			break;
+		case 2:
+			
+			break;
+		case 3:
 			break;
 		case 4:
 			return; 
