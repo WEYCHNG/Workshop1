@@ -45,7 +45,7 @@ void modifyTrans(Transaction transaction,string UserId);
 
 //Report and analysis
 void statistic(string UserId);
-
+void graph(string UserId);
 
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
@@ -1458,11 +1458,11 @@ void statistic(string UserId)
 
 	Menu TH;
 	TH.header = "\t\t\tStatistic per month";
-	TH.addOption(CYAN"Number of transaction" RESET);
-	TH.addOption(CYAN"Net transaction amount" RESET);
-	TH.addOption(CYAN"Total transaction amount" RESET);
-	TH.addOption("Graph");
-	TH.addOption("Back to User Page");
+	TH.addOption(CYAN"Number of transaction" RESET);//1
+	TH.addOption(CYAN"Net transaction amount" RESET);//2
+	TH.addOption(CYAN"Total transaction amount" RESET);//3
+	TH.addOption("Graph");//4
+	TH.addOption("Back to User Page");//5
 
 	Menu SubTA;
 	SubTA.addOption("This month");
@@ -1477,13 +1477,16 @@ void statistic(string UserId)
 	formattedNetTrans = formatAmount(netTrans);
 	formattedBalance = formatAmount(totalTransAmount);
 	
-	
 	while (1)
 	{
 		TH.setValue(0,to_string(totalTrans));
 		TH.setValue(1, formattedNetTrans);
 		switch(TH.prompt())
 		{
+		case 1:
+			break;
+		case 2:
+			break;
 		case 3:
 			switch (SubTA.prompt())
 			{
@@ -1496,9 +1499,55 @@ void statistic(string UserId)
 			}
 			break;
 		case 4:
+			graph(UserId);
 			break;
 		case 5:
 			return;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void graph(string UserId)
+{
+	double DPT=0,EPS=0;
+	int number1, number2;
+	int x = 0, y = 0;
+	string Deposit, Expenses,stars;
+	Menu GPH;
+	GPH.addOption("Month");
+	GPH.addOption("Year");
+	GPH.addOption("Confirm");
+	
+	while(1)
+	{
+		number1 = (int)(DPT / 20);
+		number2 = (int)(EPS / 20);
+
+		Deposit = "Deposit: ";
+		for (int i = 0; i < number1; i++)
+		{
+			stars += "*";
+		}
+		Deposit += stars;
+
+		switch (GPH.prompt())
+		{
+		case 1:
+			cout << "Enter month (Example: Jan=1,Feb=2...): ";
+			cin >> x;
+			GPH.setValue(0, to_string(x));
+			break;
+		case 2:
+			cout << "Enter year (Example: 2023,2024...): ";
+			cin >> y;
+			GPH.setValue(1, to_string(y));
+			break;
+		case 3:
+			DPT = Transaction::totalDeposit(UserId, x, y);
+			EPS = Transaction::totalExpenses(UserId, x, y);
 			break;
 		default:
 			break;
