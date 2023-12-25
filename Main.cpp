@@ -1517,37 +1517,54 @@ void graph(string UserId)
 	int x = 0, y = 0;
 	string Deposit, Expenses,stars;
 	Menu GPH;
+	GPH.header="\tGraph";
 	GPH.addOption("Month");
 	GPH.addOption("Year");
 	GPH.addOption("Confirm");
+	GPH.addOption("Back to statistic");
 	
 	while(1)
 	{
-		number1 = (int)(DPT / 20);
-		number2 = (int)(EPS / 20);
-
-		Deposit = "Deposit: ";
-		for (int i = 0; i < number1; i++)
-		{
-			stars += "*";
-		}
-		Deposit += stars;
-
 		switch (GPH.prompt())
 		{
 		case 1:
-			cout << "Enter month (Example: Jan=1,Feb=2...): ";
-			cin >> x;
-			GPH.setValue(0, to_string(x));
+			
 			break;
 		case 2:
-			cout << "Enter year (Example: 2023,2024...): ";
-			cin >> y;
-			GPH.setValue(1, to_string(y));
+			
 			break;
 		case 3:
+
+			cout << "Enter year (Example: 2023,2024...): ";
+			cin >> y;
+			cout << "Enter month (Example: Jan=1,Feb=2...): ";
+			cin >> x;
 			DPT = Transaction::totalDeposit(UserId, x, y);
 			EPS = Transaction::totalExpenses(UserId, x, y);
+			number1 = (int)(DPT / 200);
+			number2 = (int)(EPS / 200);
+			
+			for (int i = 0; i < number1; i++)
+			{
+				stars += "*";
+			}
+			Deposit += stars;
+			stars = "";
+			cout << "Deposit:   " << CYAN<<Deposit<<RESET;
+			
+			for (int i = 0; i < number2; i++)
+			{
+				stars += "*";
+			}
+			Expenses += stars;
+			stars = "";
+			cout << "\nExpeneses: " <<CYAN<< Expenses<<RESET;
+			
+			cout << endl;
+			_getch();
+			break;
+		case 4:
+			return; 
 			break;
 		default:
 			break;

@@ -295,17 +295,16 @@ double Transaction::totalExpenses(string UserId, int x, int y)
 {
 	DBConnection db;
 	double monthOfExpenses = 0;
-	db.prepareStatement("SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month,"
-		"SUM(CASE WHEN MONTH(transaction_date) = ? AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out"
-		"FROM transaction JOIN account USING(AccountID)"
-		"WHERE UserID = ? AND YEAR(transaction_date) = ? AND MONTH(transaction_date) = ?"
-		"GROUP BY MONTH(transaction_date)"
-		"ORDER BY MONTH(transaction_date) ASC; ");
+	db.prepareStatement("SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month, "
+		"SUM(CASE WHEN MONTH(transaction_date) = ? AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out "
+		"FROM transaction JOIN account USING(AccountID) "
+		"WHERE UserID = ? AND YEAR(transaction_date) = ? AND MONTH(transaction_date) = ? "
+		"GROUP BY MONTH(transaction_date) "
+		"ORDER BY MONTH(transaction_date) ASC;");
 	db.stmt->setInt(1, x); // Replace x with the same month number for expenses
 	db.stmt->setString(2, UserId); // Assuming UserId is a string parameter
 	db.stmt->setInt(3, y); // Replace y with the year you want to query (e.g., 2023)
 	db.stmt->setInt(4, x); // Replace x again for the month number you're querying
-
 	db.QueryResult();
 
 	while (db.res->next())
