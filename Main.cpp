@@ -54,6 +54,8 @@ bool isValidFirstName(const string& firstName);
 bool isValidLastName(const string& lastName);
 bool isValidPassword(const string& password);
 bool isValidEmail(const string& email);
+bool isValidYear(const string& input);
+bool isValidYearAndMonth(const string& yearInput, const string& monthInput);
 //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
 int main()
@@ -1510,12 +1512,85 @@ void statistic(string UserId)
 	}
 }
 
+
+bool isValidYear(const string& input) {
+	// Check if the input contains only digits
+	for (char ch : input) {
+		if (!isdigit(ch)) {
+			return false;
+		}
+	}
+
+	// Convert the input to an integer
+	int year = std::stoi(input);
+
+	// Check if the year is a four-digit number
+	if (input.length() != 4 || year < 0) {
+		return false;
+	}
+
+	// Get the current year
+	std::time_t currentTime = std::time(nullptr);
+	std::tm currentTimeStruct;
+	localtime_s(&currentTimeStruct, &currentTime);
+	const int currentYear = currentTimeStruct.tm_year + 1900;
+
+	// Check if the year is within a reasonable range
+	if (year < 1900 || year > currentYear) {
+		return false;
+	}
+
+	return true;
+}
+
+bool isValidYearAndMonth(const string& yearInput, const string& monthInput) {
+	// Check if the year input contains only digits
+	for (char ch : yearInput) {
+		if (!isdigit(ch)) {
+			return false;
+		}
+	}
+
+	// Check if the month input contains only digits
+	for (char ch : monthInput) {
+		if (!isdigit(ch)) {
+			return false;
+		}
+	}
+
+	// Convert year and month inputs to integers
+	int year = std::stoi(yearInput);
+	int month = std::stoi(monthInput);
+
+	// Check if the year is a four-digit number and the month is within range (1 to 12)
+	if (yearInput.length() != 4 || year < 0 || month < 1 || month > 12) {
+		return false;
+	}
+
+	// Get the current year and month
+	std::time_t currentTime = std::time(nullptr);
+	std::tm currentTimeStruct;
+	localtime_s(&currentTimeStruct, &currentTime);
+	const int currentYear = currentTimeStruct.tm_year + 1900;
+	const int currentMonth = currentTimeStruct.tm_mon + 1; // Adding 1 because tm_mon is zero-based
+
+	// Check if the year is within a reasonable range and if the month is not in the future
+	if (year < 1900 || year > currentYear || (year == currentYear && month > currentMonth)) {
+		return false;
+	}
+
+	return true;
+}
+
 void graph(string UserId)
 {
-	double DPT=0,EPS=0;
+	double DPT, EPS,yearOfDeposit,yearOfExpenses,yearOfDeposit1,yearOfExpenses1;
 	int number1, number2;
-	int x = 0, y = 0;
-	string Deposit, Expenses,stars;
+	int x = 0, y = 0, a = 0,b=0;
+	string Deposit, Expenses, stars;
+	int number3, number4, number5, number6; // Initialize variables
+	string  Deposit1, Expenses1, Deposit2, Expenses2;
+
 	Menu GPH;
 	GPH.header="\tGraph";
 	GPH.addOption("Deposit Versus Expenses in same month");
@@ -1525,15 +1600,28 @@ void graph(string UserId)
 	
 	while(1)
 	{
+
+
 		switch (GPH.prompt())
 		{
 		case 1:
-			cout << "Enter month (Example: Jan=1,Feb=2...): ";
-			cin >> x;
-			cout << "Enter year (Example: 2023,2024...): ";
-			cin >> y;
-			DPT = Transaction::totalDeposit(UserId, x, y);
-			EPS = Transaction::totalExpenses(UserId, x, y);
+			while (1)
+			{
+				cout << "\nEnter month (Example: Jan=1,Feb=2...): ";
+				cin >> x;
+				cout << "Enter year (Example: 2023,2024...): ";
+				cin >> y;
+				if (isValidYearAndMonth(to_string(y), to_string(x))) {
+					DPT = Transaction::totalDeposit(UserId, x, y);
+					EPS = Transaction::totalExpenses(UserId, x, y);
+					break;
+				}
+				else {
+					cout << "Invalid year or month. Please enter a valid year (four digits) and month (1-12)." << endl;
+					cout << "Please enter year and month again !";
+				}
+			}
+			
 			cout << "\n\n";
 			number1 = (int)(DPT / 200);
 			number2 = (int)(EPS / 200);
@@ -1558,9 +1646,89 @@ void graph(string UserId)
 			_getch();
 			break;
 		case 2:
+
+
+			cout << "Enter first year: ";
+			cin >> a;
+			while (1)
+			{
+				if (isValidYear(to_string(a))) 
+				{
+					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
+					yearOfExpenses = Transaction::totalExpensesInYear(UserId, a);
+					break;
+				}
+				else 
+				{
+					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." <<endl;
+					cout << "Please enter first year again: ";
+					cin >> a;
+				}
+			}
+
+			cout << "\nEnter second year: ";
+			cin >> b;
+			while (1)
+			{
+				if (isValidYear(to_string(b)))
+				{
+					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
+					yearOfExpenses1 = Transaction::totalExpensesInYear(UserId, b);
+					break;
+				}
+				else {
+					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range." << endl;
+					cout << "Please enter second year again: ";
+					cin >> b;
+				}
+			}
 			
+			
+			cout << "\n\n";
+			number3 = (int)(yearOfDeposit / 200);
+			number4 = (int)(yearOfExpenses / 200);
+			number5 = (int)(yearOfDeposit1 / 200);
+			number6 = (int)(yearOfExpenses1 / 200);
+			for (int i = 0; i < number3; i++)
+			{
+				stars += "*";
+			}
+			Deposit1 += stars;
+			stars = "";
+			cout << "Years: " << GREEN << a << "-" << b << RESET;
+			cout << "\n\nYear: " << YELLOW << a<< RESET;
+			cout << "\nDeposit:  "  << CYAN << Deposit1 << RESET;
+
+			for (int i = 0; i < number4; i++)
+			{
+				stars += "*";
+			}
+			Expenses1 += stars;
+			stars = "";
+			cout << "\nExpenses: " << CYAN << Expenses1 << RESET;
+			cout << endl;
+
+			for (int i = 0; i < number5; i++)
+			{
+				stars += "*";
+			}
+			Deposit2 += stars;
+			stars = "";
+			cout << "\nYear: " << YELLOW << b << RESET;
+			cout << "\nDeposit:  " << CYAN << Deposit2 << RESET;
+
+			for (int i = 0; i < number6; i++)
+			{
+				stars += "*";
+			}
+			Expenses2 += stars;
+			stars = "";
+			cout << "\nExpenses: " << CYAN << Expenses2 << RESET;
+			cout << endl;
+			_getch();
 			break;
 		case 3:
+			return;
 			break;
 		case 4:
 			return; 

@@ -27,7 +27,8 @@ public:
 	static double netTrans(string UserID);
 	static double totalDeposit(string UserID, int x, int y);
     static double totalExpenses(string UserID, int x, int y);
-	//static double totalDepositAndExpenses(string UserI,int x,int y);
+	static double totalDepositInYear(string UserID, int a);
+	static double totalExpensesInYear(string UserID, int a);
 	~Transaction();
 };
 
