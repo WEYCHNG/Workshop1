@@ -1647,11 +1647,10 @@ void graph(string UserId)
 			break;
 		case 2:
 
-
-			cout << "Enter first year: ";
-			cin >> a;
 			while (1)
 			{
+				cout << "Enter first year: ";
+				cin >> a;
 				if (isValidYear(to_string(a))) 
 				{
 					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
@@ -1661,15 +1660,15 @@ void graph(string UserId)
 				else 
 				{
 					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." <<endl;
-					cout << "Please enter first year again: ";
-					cin >> a;
+					cout << "Please enter first year again: ";;
 				}
 			}
 
-			cout << "\nEnter second year: ";
-			cin >> b;
+			
 			while (1)
 			{
+				cout << "\nEnter second year: ";
+				cin >> b;
 				if (isValidYear(to_string(b)))
 				{
 					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
@@ -1679,10 +1678,8 @@ void graph(string UserId)
 				else {
 					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range." << endl;
 					cout << "Please enter second year again: ";
-					cin >> b;
 				}
 			}
-			
 			
 			cout << "\n\n";
 			number3 = (int)(yearOfDeposit / 200);
