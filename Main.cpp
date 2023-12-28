@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>//waiting
 #include <regex>//checking alphabetical
+#include <cstdio>//printf
 
 //Project header
 #include "User.h"
@@ -303,7 +304,8 @@ void loginMenu()
 			break;
 		case 2:
 			cout << "Enter Password: ";
-			while (true) {
+			while (true) 
+			{
 				ch = _getch(); // Capture the input without displaying it
 				if (ch == 13) { // 13 is the ASCII code for Enter key
 					break;
@@ -1078,7 +1080,7 @@ void newTrans(string UserID, string account_name)
 			addTrans.transaction_type ="Deposit";
 			homeTrans.setValue(1, addTrans.transaction_type);	
 		}
-		homeTrans.header = "Add Transaction";
+		homeTrans.header = "\t\tAdd Transaction";
 		switch (homeTrans.prompt())
 		{
 		case 1:
@@ -1459,9 +1461,9 @@ void statistic(string UserId)
 	totalTransAmount = Transaction::totalTransactionAmount(UserId);
 
 	Menu TH;
-	TH.header = "\t\t\tStatistic per month";
+	TH.header = "\tStatistic";
 	TH.addOption(CYAN"Number of transaction" RESET);//1
-	TH.addOption(CYAN"Net transaction amount" RESET);//2
+	TH.addOption(CYAN"Net transaction amount (per month)" RESET);//2
 	TH.addOption(CYAN"Total transaction amount" RESET);//3
 	TH.addOption("Graph");//4
 	TH.addOption("Back to User Page");//5
@@ -1584,66 +1586,145 @@ bool isValidYearAndMonth(const string& yearInput, const string& monthInput) {
 
 void graph(string UserId)
 {
-	double DPT, EPS,yearOfDeposit,yearOfExpenses,yearOfDeposit1,yearOfExpenses1;
-	int number1, number2;
-	int x = 0, y = 0, a = 0,b=0;
-	string Deposit, Expenses, stars;
-	int number3, number4, number5, number6; // Initialize variables
-	string  Deposit1, Expenses1, Deposit2, Expenses2;
-
 	Menu GPH;
 	GPH.header="\tGraph";
 	GPH.addOption("Deposit Versus Expenses in same month");
-	GPH.addOption("Deposit Versus Expenses between two different year");
-	GPH.addOption("Expenses Versus remainder budget in same month");
+	GPH.addOption("Deposit Versus Expenses between two different years");
 	GPH.addOption("Back to statistic");
 	
 	while(1)
 	{
-
+		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0;
+		double PDPT, PEPS, PDPT1, PEPS1, PDPT2, PEPS2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3;
+		int number1, number2, number3, number4, number5, number6;
+		int x, y, a, b, YOD, YOE, YOD1, YOE1;
+		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "";
 
 		switch (GPH.prompt())
 		{
 		case 1:
-			while (1)
+			while (1)//infinite loop that runs continually until a break statement is explicitly issued
 			{
 				cout << "\nEnter month (Example: Jan=1,Feb=2...): ";
 				cin >> x;
 				cout << "Enter year (Example: 2023,2024...): ";
 				cin >> y;
-				if (isValidYearAndMonth(to_string(y), to_string(x))) {
+				if (isValidYearAndMonth(to_string(y), to_string(x)))
+				{
+					int j = 0, h = 0;
 					DPT = Transaction::totalDeposit(UserId, x, y);
 					EPS = Transaction::totalExpenses(UserId, x, y);
+					
+				
+					if (DPT > 0 && DPT<=10000) 
+					{
+						h = 100;
+						number1 = static_cast<int>(DPT / h); //converts a given expression to a specified type
+						for (int i = 0; i < number1; i++)
+						{
+							stars += "*";
+						}
+						Deposit += stars;
+					}
+					else if (DPT > 10000 && DPT <= 50000)
+					{
+						h = 500;
+						number2 = static_cast<int>(DPT / h);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Deposit += stars;
+					}
+					else if (DPT < 0)
+					{
+						throw out_of_range("Total deposit value is negative.");
+					}
+					else if (DPT > 50000 && DPT <= 250000)
+					{
+						h = 2500;
+						number2 = static_cast<int>(DPT / h);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Deposit += stars;
+					}
+					else if (DPT > 250000)
+					{
+						h = 5000;
+						number2 = static_cast<int>(EPS / h);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Deposit += stars;
+					}
+					stars = "";
+
+					if (EPS >0 && EPS<=10000) 
+					{
+						j = 100;
+						number2 = static_cast<int>(EPS / j);
+						for (int i = 0; i < number2; i++) 
+						{
+							stars += "*";
+						}
+						Expenses += stars;
+					}
+					else if (EPS>10000 && EPS<=50000)
+					{
+						j = 500;
+						number2 = static_cast<int>(EPS / j);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Expenses += stars;
+					}
+					else if (EPS < 0)
+					{
+						throw out_of_range("Total expenses value is negative.");
+					}
+					else if (EPS > 50000 && EPS <= 250000)
+					{
+						j = 2500;
+						number2 = static_cast<int>(EPS / j);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Expenses += stars;
+					}
+					else if (EPS > 250000)
+					{
+						j = 5000;
+						number2 = static_cast<int>(EPS / j);
+						for (int i = 0; i < number2; i++)
+						{
+							stars += "*";
+						}
+						Expenses += stars;
+					}
+					PDPT = (DPT / (DPT + EPS)) * 100;
+					PEPS = (EPS / (DPT + EPS)) * 100;
+					cout << "\n\n";
+					cout << "------------------------------------------- " << YELLOW  "Date(MM-YYYY): " << x << "-" << y << RESET << " -----------------------------------------------------";
+					cout << "\n\nDeposit:   " << CYAN << Deposit << RESET << "  "; printf("%.2f", DPT);
+					cout << "\nExpeneses: " << CYAN << Expenses << RESET << "  "; printf("%.2f", EPS);
+					cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << h << RESET;
+					cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << j << RESET;
+					cout << "\n\nPercentage of deposit: "; printf("%.2f", PDPT); cout << "%";
+					cout << "\nPercentage of expenses: "; printf("%.2f", PEPS); cout << "%";
+					_getch();
 					break;
 				}
-				else {
+				else
+				{
 					cout << "Invalid year or month. Please enter a valid year (four digits) and month (1-12)." << endl;
-					cout << "Please enter year and month again !";
+					cout << "Please enter year and month again !" << endl;;
 				}
 			}
-			
-			cout << "\n\n";
-			number1 = (int)(DPT / 200);
-			number2 = (int)(EPS / 200);
-
-			for (int i = 0; i < number1; i++)
-			{
-				stars += "*";
-			}
-			Deposit += stars;
-			stars = "";
-			cout << "Date(MM-YYYY): " <<YELLOW<< x << "-" << y<<RESET;
-			cout << "\nDeposit:   " << CYAN << Deposit << RESET;
-
-			for (int i = 0; i < number2; i++)
-			{
-				stars += "*";
-			}
-			Expenses += stars;
-			stars = "";
-			cout << "\nExpeneses: " << CYAN << Expenses << RESET;
-			cout << endl;
-			_getch();
 			break;
 		case 2:
 
@@ -1653,6 +1734,8 @@ void graph(string UserId)
 				cin >> a;
 				if (isValidYear(to_string(a))) 
 				{
+					YOE = 0;
+					YOD = 0;
 					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
 					yearOfExpenses = Transaction::totalExpensesInYear(UserId, a);
 					break;
@@ -1660,75 +1743,279 @@ void graph(string UserId)
 				else 
 				{
 					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." <<endl;
-					cout << "Please enter first year again: ";;
+					cout << "Please enter first year again! " << endl;
 				}
 			}
 
-			
+			if (yearOfDeposit > 0 && yearOfDeposit <= 10000)
+			{
+				YOD = 100;
+				number3 = static_cast<int>(yearOfDeposit / YOD);
+				for (int i = 0; i < number3; i++)
+				{
+					stars += "*";
+				}
+				Deposit1 += stars;
+			}
+			else if (yearOfDeposit < 0) {
+				throw out_of_range("Deposit value is negative.");
+			}
+			else if (yearOfDeposit > 10000 && yearOfDeposit <= 50000)
+			{
+				YOD = 500;
+				number3 = static_cast<int>(yearOfDeposit / YOD);
+				for (int i = 0; i < number3; i++)
+				{
+					stars += "*";
+				}
+				Deposit1 += stars;
+			}
+			else if (yearOfDeposit > 50000 && yearOfDeposit <= 250000)
+			{
+				YOD = 2500;
+				number3 = static_cast<int>(yearOfDeposit / YOD);
+				for (int i = 0; i < number3; i++)
+				{
+					stars += "*";
+				}
+				Deposit1 += stars;
+			}
+			else if (yearOfDeposit > 250000)
+			{
+				YOD = 5000;
+				number3 = static_cast<int>(yearOfDeposit / YOD);
+				for (int i = 0; i < number3; i++)
+				{
+					stars += "*";
+				}
+				Deposit1 += stars;
+			}
+			stars = "";
+
+			if (yearOfExpenses > 0 && yearOfExpenses<=10000)
+			{
+				YOE = 100;
+				number4 = static_cast<int>(yearOfExpenses / YOE);
+				for (int i = 0; i < number4; i++)
+				{
+					stars += "*";
+				}
+				Expenses1 += stars;
+			}
+			else if (yearOfExpenses < 0) {
+				throw out_of_range("Expenses value is negative.");
+			}
+			else if (yearOfExpenses > 10000 && yearOfExpenses <= 50000)
+			{
+				YOE = 500;
+				number4 = static_cast<int>(yearOfExpenses / YOE);
+				for (int i = 0; i < number4; i++)
+				{
+					stars += "*";
+				}
+				Expenses1 += stars;
+			}
+			else if (yearOfExpenses > 50000 && yearOfExpenses <= 250000)
+			{
+				YOE = 2500;
+				number4 = static_cast<int>(yearOfExpenses / YOE);
+				for (int i = 0; i < number4; i++)
+				{
+					stars += "*";
+				}
+				Expenses1 += stars;
+			}
+			else if (yearOfExpenses > 250000)
+			{
+				YOE = 5000;
+				number4 = static_cast<int>(yearOfExpenses / YOE);
+				for (int i = 0; i < number4; i++)
+				{
+					stars += "*";
+				}
+				Expenses1 += stars;
+			}
+			stars = "";
+
 			while (1)
 			{
-				cout << "\nEnter second year: ";
+				cout << "Enter second year: ";
 				cin >> b;
 				if (isValidYear(to_string(b)))
 				{
+					YOD1 = 0;
+					YOE1 = 0;
 					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
 					yearOfExpenses1 = Transaction::totalExpensesInYear(UserId, b);
 					break;
 				}
-				else {
+				else
+				{
 					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range." << endl;
-					cout << "Please enter second year again: ";
+					cout << "Please enter second year again! " << endl;
 				}
 			}
+
+			if (yearOfDeposit1 > 0 && yearOfDeposit1 <= 10000)
+			{
+				YOD1 = 100;
+				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Deposit2 += stars;
+			}
+			else if (yearOfDeposit1 < 0) {
+				throw out_of_range("Deposit value is negative.");
+			}
+			else if (yearOfDeposit1>10000 && yearOfDeposit1<=50000)
+			{
+				YOD1 = 500;
+				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Deposit2 += stars;
+			}
+			else if (yearOfDeposit1>50000&&yearOfDeposit1<=250000)
+			{
+				YOD1 = 2500;
+				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Deposit2 += stars;
+			}
+			else if (yearOfDeposit1 > 250000)
+			{
+				YOD1 = 5000;
+				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Deposit2 += stars;
+			}
+			stars = "";
+
+			if (yearOfExpenses1 > 0 && yearOfExpenses1 <= 10000)
+			{
+				YOE1=100;
+				number6 = static_cast<int>(yearOfExpenses1 / YOE1);
+				for (int i = 0; i < number6; i++)
+				{
+					stars += "*";
+				}
+				Expenses2 += stars;
+			}
+			else if (yearOfExpenses1 < 0) {
+				throw out_of_range("Expenses value is negative.");
+			}
+			else if (yearOfExpenses1>10000&&yearOfExpenses1<=50000)
+			{
+				YOE1 = 500;
+				number5 = static_cast<int>(yearOfExpenses1 / YOE1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Expenses2 += stars;
+			}
+			else if (yearOfExpenses1>50000&&yearOfExpenses1<=250000)
+			{
+				YOE1 = 2500;
+				number5 = static_cast<int>(yearOfExpenses1 / YOE1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Expenses2 += stars;
+			}
+			else if (yearOfExpenses > 250000)
+			{
+				YOE1 = 5000;
+				number5 = static_cast<int>(yearOfExpenses1 / YOE1);
+				for (int i = 0; i < number5; i++)
+				{
+					stars += "*";
+				}
+				Expenses2 += stars;
+			}
+			stars = "";
+			PDPT1 = (yearOfDeposit / (yearOfDeposit + yearOfExpenses)) * 100;
+			PEPS1 = (yearOfExpenses / (yearOfDeposit + yearOfExpenses)) * 100;
+			PDPT2 = (yearOfDeposit1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
+			PEPS2= (yearOfExpenses1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
+			PBTY = (yearOfDeposit / (yearOfDeposit + yearOfDeposit1)) * 100;
+			PBTY1 = (yearOfDeposit1 / (yearOfDeposit + yearOfDeposit1)) * 100;
+			PBTY2 = (yearOfExpenses / (yearOfExpenses + yearOfExpenses1)) * 100;
+			PBTY3 = (yearOfExpenses1 / (yearOfExpenses + yearOfExpenses1)) * 100;
+			PDBTY = ((yearOfDeposit - yearOfDeposit1) / yearOfDeposit) * 100;
+			PDBTY1 = ((yearOfDeposit1 - yearOfDeposit) / yearOfDeposit1) * 100;
+			PDBTY2 = ((yearOfExpenses - yearOfExpenses1) / yearOfExpenses) * 100;
+			PDBTY3 = ((yearOfExpenses1 - yearOfExpenses) / yearOfExpenses1) * 100;
 			
-			cout << "\n\n";
-			number3 = (int)(yearOfDeposit / 200);
-			number4 = (int)(yearOfExpenses / 200);
-			number5 = (int)(yearOfDeposit1 / 200);
-			number6 = (int)(yearOfExpenses1 / 200);
-			for (int i = 0; i < number3; i++)
-			{
-				stars += "*";
-			}
-			Deposit1 += stars;
-			stars = "";
-			cout << "Years: " << GREEN << a << "-" << b << RESET;
-			cout << "\n\nYear: " << YELLOW << a<< RESET;
-			cout << "\nDeposit:  "  << CYAN << Deposit1 << RESET;
-
-			for (int i = 0; i < number4; i++)
-			{
-				stars += "*";
-			}
-			Expenses1 += stars;
-			stars = "";
-			cout << "\nExpenses: " << CYAN << Expenses1 << RESET;
+			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
+			cout << "\n\nYear: " << GREEN << a << RESET;
+			cout << "\nDeposit:  " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
+			cout << "\nExpenses: " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD << RESET;
+			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE << RESET;
 			cout << endl;
 
-			for (int i = 0; i < number5; i++)
-			{
-				stars += "*";
-			}
-			Deposit2 += stars;
-			stars = "";
-			cout << "\nYear: " << YELLOW << b << RESET;
-			cout << "\nDeposit:  " << CYAN << Deposit2 << RESET;
-
-			for (int i = 0; i < number6; i++)
-			{
-				stars += "*";
-			}
-			Expenses2 += stars;
-			stars = "";
-			cout << "\nExpenses: " << CYAN << Expenses2 << RESET;
+			cout << "\n";
+			cout << "\nYear: " << GREEN << b << RESET;
+			cout << "\nDeposit:  " << CYAN << Deposit2 << RESET << " "; printf("%.2f", yearOfDeposit1);
+			cout << "\nExpenses: " << CYAN << Expenses2 << RESET << " "; printf("%.2f", yearOfExpenses1);
+			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD1 << RESET;
+			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE1 << RESET;
 			cout << endl;
+			cout << "\n_____________________";
+			cout << "\n\tReport";
+			cout << "\n_____________________";
+			cout << "\nPercentage of deposit in " << a << ": "; printf("%.2f", PDPT1); cout << "%";
+			cout << "\nPercentage of expenses in " << a << ": "; printf("%.2f", PEPS1); cout << "%";
+			cout << "\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
+			cout << "\nPercentage of expenses in " << b << ": "; printf("%.2f", PEPS2); cout << "%";
+			if (yearOfDeposit>yearOfDeposit1)
+			{
+				cout << endl << endl;
+				cout << a << " has higher deposit than " << b;
+				cout << "\nPercentage of deposit in " << a << " is "; printf("%.2f", PBTY); cout << "%";
+				cout << "\nPercentage of deposit in " << b << " is "; printf("%.2f", PBTY1); cout << "%";
+				cout << "\nPercentage of deposit in " << a << " more than " << b<<" is "; printf("%.2f", PDBTY); cout << "%";
+			}
+			else
+			{
+				cout << endl << endl;
+				cout << b << " has higher deposit than " << a;
+				cout << "\nPercentage of deposit in " << a << " is "; printf("%.2f", PBTY); cout << "%";
+				cout << "\nPercentage of deposit in " << b << " is "; printf("%.2f", PBTY1); cout << "%";
+				cout << "\nPercentage of deposit in " << b << " more than " << a<<" is "; printf("%.2f", PDBTY1); cout << "%";
+			}
+			if (yearOfExpenses > yearOfExpenses1)
+			{
+				cout << endl << endl;
+				cout << a << " has higher expenses than " << b;
+				cout << "\nPercentage of expenses in " << a << " is "; printf("%.2f", PBTY2); cout << "%";
+				cout << "\nPercentage of expenses in " << b << " is "; printf("%.2f", PBTY3); cout << "%";
+				cout << "\nPercentage of expenses in " << a << " more than " << b<<" is "; printf("%.2f", PDBTY2); cout << "%";
+			}
+			else
+			{
+				cout << endl << endl;
+				cout << b << " has higher expenses than " << a;
+				cout << "\nPercentage of expenses in " << a << " is "; printf("%.2f", PBTY2); cout << "%";
+				cout << "\nPercentage of expenses in " << b << " is "; printf("%.2f", PBTY3); cout << "%";
+				cout << "\nPercentage of expenses in " << b << " more than " << a <<" is "; printf("%.2f", PDBTY3); cout << "%";
+			}
 			_getch();
 			break;
 		case 3:
 			return;
-			break;
-		case 4:
-			return; 
 			break;
 		default:
 			break;
