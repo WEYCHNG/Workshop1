@@ -303,4 +303,41 @@ double Transaction::totalExpensesInYear(string UserId, int a)
 	return yearOfExpenses;
 }
 
+double Transaction::budgetRemainder(string UserId, string b,string c)
+{
+	DBConnection db;
+	double budgetremainder = 0;
+	db.prepareStatement("SELECT SUM(budget_amount) AS budget_remainder FROM account WHERE UserID=? AND start_date LIKE ?; ");
+	db.stmt->setString(1, UserId);
+	db.stmt->setString(2, "%" + b + "-" + c + "%");
+
+	db.QueryResult();
+	if (db.res->rowsCount() > 0) {
+		while (db.res->next())
+		{
+			budgetremainder = db.res->getDouble("budget_remainder");
+		}
+	}
+	db.~DBConnection();
+	return budgetremainder;
+}
+
+double Transaction::budgetRemainderYear(string UserId, string d)
+{
+	DBConnection db;
+	double budgetremainder = 0;
+	db.prepareStatement("SELECT SUM(budget_amount) AS budget_remainder FROM account WHERE UserID=? AND start_date LIKE ?; ");
+	db.stmt->setString(1, UserId);
+	db.stmt->setString(2, "%" + d + "%");//any length containing d;
+
+	db.QueryResult();
+	if (db.res->rowsCount() > 0) {
+		while (db.res->next())
+		{
+			budgetremainder = db.res->getDouble("budget_remainder");
+		}
+	}
+	db.~DBConnection();
+	return budgetremainder;
+}
 Transaction::~Transaction() {}

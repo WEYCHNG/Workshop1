@@ -20,7 +20,7 @@ int Menu::prompt() {
 	do
 	{
 		system("cls"); // clear ur console
-		cout <<"\t\t\t"<<YELLOW"========================================================================================================================================\t\t\t"<<RESET<<endl;
+		cout <<"\n\n\t\t\t"<<YELLOW"========================================================================================================================================\t\t\t"<<RESET<<endl;
 		cout << setw(84)<<header << endl;
 		for (int i = 0; i < options.size(); i++) {//loop trhough each option 
 			cout <<setw(82)<<"[" <<i + 1<< "]"  << bullet << options[i].first;

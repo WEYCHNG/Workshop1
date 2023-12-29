@@ -8,6 +8,7 @@
 #include <chrono>//waiting
 #include <regex>//checking alphabetical
 #include <cstdio>//printf
+#include <cmath>
 
 //Project header
 #include "User.h"
@@ -51,6 +52,7 @@ void graph(string UserId);
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
 string getCurrentMonthAbbreviation();
+bool validateUsername(const string& username);
 bool isValidFirstName(const string& firstName);
 bool isValidLastName(const string& lastName);
 bool isValidPassword(const string& password);
@@ -85,6 +87,22 @@ int main()
 	}
 }
 
+bool validateUsername(const string& username) {
+	// Check length
+	if (username.length() < 3 || username.length() > 20) {
+		cout << RED"\n\t\tUsername length should be between 3 and 20 characters." RESET<< endl;
+		return false;
+	}
+
+	// Check character set (allowing only alphanumeric characters and underscore)
+	if (!regex_match(username, regex("^[a-zA-Z0-9_]+$"))) {
+		cout << RED"\n\t\tUsername should only contain letters, numbers, or underscores." RESET << endl;
+		return false;
+	}
+
+	return true;
+}
+
 bool isValidFirstName(const string& firstName) {
 	// Regular expression to match only alphabetic characters
 	regex pattern("^[a-zA-Z]+$");
@@ -110,29 +128,29 @@ bool isValidPassword(const string& password) {
 
 	// Check the length
 	if (password.length() < 8) {
-		cout << RED"\n\t\tPassword must be at least 8 characters long." RESET<< std::endl;
+		cout << RED"\n\t\tPassword must be at least 8 characters long." RESET<< endl;
 		_getch();
 		return false;
 	}
 
 	// Check for required character classes
 	if (!regex_search(password, upper)) {
-		cout << RED"\n\t\tPassword must contain at least one uppercase letter." RESET << std::endl;
+		cout << RED"\n\t\tPassword must contain at least one uppercase letter." RESET << endl;
 		_getch();
 		return false;
 	}
 	if (!regex_search(password, lower)) {
-		cout << RED"\n\t\tPassword must contain at least one lowercase letter." RESET << std::endl;
+		cout << RED"\n\t\tPassword must contain at least one lowercase letter." RESET << endl;
 		_getch();
 		return false;
 	}
 	if (!std::regex_search(password, digit)) {
-		cout << RED"\n\t\tPassword must contain at least one digit." RESET<< std::endl;
+		cout << RED"\n\t\tPassword must contain at least one digit." RESET<< endl;
 		_getch();
 		return false;
 	}
 	if (!std::regex_search(password, special)) {
-		cout << RED"\n\t\tPassword must contain at least one special character." RESET << std::endl;
+		cout << RED"\n\t\tPassword must contain at least one special character." RESET << endl;
 		_getch();
 		return false;
 	}
@@ -165,14 +183,21 @@ void registerAccount() {
 	cnMenu.addOption("Confirm");
 	cnMenu.addOption("Back to login page");
 
-	string firstName, lastName, password, emailAddress;
+	string firstName, lastName, password, emailAddress, username;	
 	while (1) {
 
 		switch (cnMenu.prompt()) {
 		case 1:
 			cout << "Enter UserId: ";
-			cin >> newacc.UserId;
-			cnMenu.setValue(0, newacc.UserId);
+			cin >> username;
+			if (validateUsername(username)) {
+				newacc.UserId = username;
+				cnMenu.setValue(0, newacc.UserId);
+			}
+			else {
+				cout << RED"\n\t\tInvalid username." << endl;
+				_getch();
+			}
 			break;
 		case 2:
 			cout << "Enter first name: ";
@@ -558,28 +583,29 @@ void AccountPage(string UserId)
 		if (displayString == "") {
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2)<< setw(5)  << "Account Name" << "|" << setw(18) << "Balance"
-				<< "|" << setw(23) << "Budget amount" << "|" << setw(23) << "Start date" << "|" << setw(23) << "End date" <<  "|"<< endl;
+			tmpString << fixed << setprecision(2)<< setw(5)  << "Account Name" << "|" << setw(18)<< "Balance"
+				<< "|" << setw(23) << "Budget Remainder" << "|" << setw(23) << "Start date" << "|" << setw(23)  << "End date" <<  "|"<< endl;
 
+			
 			for (int i = 0; i < accounts.size(); i++) {
-				tmpString << setw(12) << accounts[i].account_name << "|" << setw(16); 
+				tmpString << setw(12) << accounts[i].account_name << "|" << setw(16);
 				if (accounts[i].balance >0 )
 				{
-					tmpString << GREEN  << accounts[i].balance << WHITE;
+					tmpString << GREEN  << accounts[i].balance <<right<< WHITE;
 				}
 				else
 				{
 					tmpString << RED <<accounts[i].balance << WHITE;
 				}
 				
-				tmpString << "|" << setw(21); 
+				tmpString << "|" <<setw(21); 
 				if(accounts[i].budget_amount >0)
 				{
-					tmpString << GREEN  << accounts[i].budget_amount << WHITE;
+					tmpString << GREEN  << accounts[i].budget_amount<< right<<WHITE;
 				}
 				else
 				{
-					tmpString << RED  << accounts[i].budget_amount<< WHITE;
+					tmpString << RED  << accounts[i].budget_amount<<right<< WHITE;
 				}
 				tmpString << "|" << setw(23) << accounts[i].start_date << "|" << setw(23) << accounts[i].end_date << "|" << endl;
 			}
@@ -1594,11 +1620,12 @@ void graph(string UserId)
 	
 	while(1)
 	{
-		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0;
-		double PDPT, PEPS, PDPT1, PEPS1, PDPT2, PEPS2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3;
-		int number1, number2, number3, number4, number5, number6;
+		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0, BGT = 0.0, yearOfBudget = 0.0, yearOfBudget1 = 0.0;
+		double PDPT, PEPS, TBA, PDPT1, PEPS1, PDPT2, PEPS2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3, Ave, Ave1;
+		int number1, number2, number3, number4, number5, number6, number7,CHGPTV;
 		int x, y, a, b, YOD, YOE, YOD1, YOE1;
-		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "";
+		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "", Budget = "";
+		string tmpMonth;
 
 		switch (GPH.prompt())
 		{
@@ -1611,14 +1638,64 @@ void graph(string UserId)
 				cin >> y;
 				if (isValidYearAndMonth(to_string(y), to_string(x)))
 				{
-					int j = 0, h = 0;
+					int j = 0, h = 0, t = 0;
+
 					DPT = Transaction::totalDeposit(UserId, x, y);
 					EPS = Transaction::totalExpenses(UserId, x, y);
-					
-				
-					if (DPT > 0 && DPT<=10000) 
+					if (x == 1)
 					{
-						h = 100;
+						tmpMonth = "Jan";
+					}
+					else if (x == 2)
+					{
+						tmpMonth = "Feb";
+					}
+					else if (x == 3)
+					{
+						tmpMonth = "Mar";
+					}
+					else if (x == 4)
+					{
+						tmpMonth = "Apr";
+					}
+					else if (x == 5)
+					{
+						tmpMonth = "May";
+					}
+					else if (x == 6)
+					{
+						tmpMonth = "Jun";
+					}
+					else if (x == 7)
+					{
+						tmpMonth = "Jul";
+					}
+					else if (x == 3)
+					{
+						tmpMonth = "Aug";
+					}
+					else if (x == 9)
+					{
+						tmpMonth = "Sep";
+					}
+					else if (x == 10)
+					{
+						tmpMonth = "Oct";
+					}
+					else if (x == 11)
+					{
+						tmpMonth = "Nov";
+					}
+					else if (x == 12)
+					{
+						tmpMonth = "Dec";
+					}
+
+					BGT = Transaction::budgetRemainder(UserId, tmpMonth, to_string(y));
+				
+					if (DPT > 0 && DPT<=1000) 
+					{
+						h = 10;
 						number1 = static_cast<int>(DPT / h); //converts a given expression to a specified type
 						for (int i = 0; i < number1; i++)
 						{
@@ -1626,9 +1703,9 @@ void graph(string UserId)
 						}
 						Deposit += stars;
 					}
-					else if (DPT > 10000 && DPT <= 50000)
+					else if (DPT > 1000 && DPT <= 5000)
 					{
-						h = 500;
+						h = 50;
 						number2 = static_cast<int>(DPT / h);
 						for (int i = 0; i < number2; i++)
 						{
@@ -1640,9 +1717,9 @@ void graph(string UserId)
 					{
 						throw out_of_range("Total deposit value is negative.");
 					}
-					else if (DPT > 50000 && DPT <= 250000)
+					else if (DPT > 5000 && DPT <= 25000)
 					{
-						h = 2500;
+						h = 250;
 						number2 = static_cast<int>(DPT / h);
 						for (int i = 0; i < number2; i++)
 						{
@@ -1650,9 +1727,9 @@ void graph(string UserId)
 						}
 						Deposit += stars;
 					}
-					else if (DPT > 250000)
+					else if (DPT > 25000)
 					{
-						h = 5000;
+						h = 500;
 						number2 = static_cast<int>(EPS / h);
 						for (int i = 0; i < number2; i++)
 						{
@@ -1662,9 +1739,9 @@ void graph(string UserId)
 					}
 					stars = "";
 
-					if (EPS >0 && EPS<=10000) 
+					if (EPS >0 && EPS<=1000) 
 					{
-						j = 100;
+						j = 10;
 						number2 = static_cast<int>(EPS / j);
 						for (int i = 0; i < number2; i++) 
 						{
@@ -1672,9 +1749,9 @@ void graph(string UserId)
 						}
 						Expenses += stars;
 					}
-					else if (EPS>10000 && EPS<=50000)
+					else if (EPS>1000 && EPS<=5000)
 					{
-						j = 500;
+						j = 50;
 						number2 = static_cast<int>(EPS / j);
 						for (int i = 0; i < number2; i++)
 						{
@@ -1686,9 +1763,9 @@ void graph(string UserId)
 					{
 						throw out_of_range("Total expenses value is negative.");
 					}
-					else if (EPS > 50000 && EPS <= 250000)
+					else if (EPS > 5000 && EPS <= 25000)
 					{
-						j = 2500;
+						j = 250;
 						number2 = static_cast<int>(EPS / j);
 						for (int i = 0; i < number2; i++)
 						{
@@ -1696,26 +1773,95 @@ void graph(string UserId)
 						}
 						Expenses += stars;
 					}
-					else if (EPS > 250000)
+					else if (EPS > 25000)
 					{
-						j = 5000;
+						j = 500;
 						number2 = static_cast<int>(EPS / j);
 						for (int i = 0; i < number2; i++)
 						{
 							stars += "*";
 						}
 						Expenses += stars;
+					}
+
+					stars = "";
+
+					if (BGT > 0 && BGT <= 1000)
+					{
+						t = 10;
+						number7 = static_cast<int>(BGT / t);
+						for (int i = 0; i < number7; i++)
+						{
+							stars += "*";
+						}
+						Budget += stars;
+					}
+					else if (BGT > 1000 && BGT <= 5000)
+					{
+						t = 50;
+						number7 = static_cast<int>(BGT / t);
+						for (int i = 0; i < number7; i++)
+						{
+							stars += "*";
+						}
+						Budget += stars;
+					}
+					else if (BGT < 0)
+					{
+						t = 100;
+						number7 = static_cast<int>(BGT / t);
+						CHGPTV = abs(number7);
+						for (int i = 0; i < CHGPTV; i++)
+						{
+							stars += "*";
+						}
+						Budget += stars;
+					}
+					else if (BGT > 5000 && BGT <= 25000)
+					{
+						t = 250;
+						number7 = static_cast<int>(BGT / t);
+						for (int i = 0; i < number7; i++)
+						{
+							stars += "*";
+						}
+						Budget += stars;
+					}
+					else if (BGT > 25000)
+					{
+						t = 500;
+						number7 = static_cast<int>(BGT / t);
+						for (int i = 0; i < number7; i++)
+						{
+							stars += "*";
+						}
+						Budget += stars;
 					}
 					PDPT = (DPT / (DPT + EPS)) * 100;
 					PEPS = (EPS / (DPT + EPS)) * 100;
+					TBA = EPS + BGT;
+
 					cout << "\n\n";
 					cout << "------------------------------------------- " << YELLOW  "Date(MM-YYYY): " << x << "-" << y << RESET << " -----------------------------------------------------";
-					cout << "\n\nDeposit:   " << CYAN << Deposit << RESET << "  "; printf("%.2f", DPT);
-					cout << "\nExpeneses: " << CYAN << Expenses << RESET << "  "; printf("%.2f", EPS);
+					cout << "\n\nDeposit:          " << CYAN << Deposit << RESET << "  "; printf("%.2f", DPT);
+					cout << "\nExpeneses:        " << CYAN << Expenses << RESET << "  "; printf("%.2f", EPS);
+					if (BGT < 0)
+					{
+						cout << "\nBudget remainder: " << RED << Budget << RESET << "  "; printf("%.2f", BGT);
+					}
+					else
+					{
+						cout << "\nBudget remainder: " << CYAN << Budget << RESET << "  "; printf("%.2f", BGT);
+					}
 					cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << h << RESET;
 					cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << j << RESET;
+					cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << t << RESET;
+					cout << "\n________________________________________________________________________________________";
+					cout << "\n\t\t\t\tReport";
+					cout << "\n________________________________________________________________________________________";
 					cout << "\n\nPercentage of deposit: "; printf("%.2f", PDPT); cout << "%";
 					cout << "\nPercentage of expenses: "; printf("%.2f", PEPS); cout << "%";
+					cout << "\nTotal budget amount: RM"; printf("%.2f", TBA);
 					_getch();
 					break;
 				}
@@ -1738,6 +1884,7 @@ void graph(string UserId)
 					YOD = 0;
 					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
 					yearOfExpenses = Transaction::totalExpensesInYear(UserId, a);
+					//yearOfBudget = Transaction::budgetRemainderYear(UserId, to_string(a));
 					break;
 				}
 				else 
@@ -1847,6 +1994,7 @@ void graph(string UserId)
 					YOE1 = 0;
 					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
 					yearOfExpenses1 = Transaction::totalExpensesInYear(UserId, b);
+					//yearOfBudget1 = Transaction::budgetRemainderYear(UserId, to_string(b));
 					break;
 				}
 				else
@@ -1957,6 +2105,8 @@ void graph(string UserId)
 			PDBTY1 = ((yearOfDeposit1 - yearOfDeposit) / yearOfDeposit1) * 100;
 			PDBTY2 = ((yearOfExpenses - yearOfExpenses1) / yearOfExpenses) * 100;
 			PDBTY3 = ((yearOfExpenses1 - yearOfExpenses) / yearOfExpenses1) * 100;
+			Ave = ((yearOfDeposit + yearOfDeposit1) / 2);
+			Ave1 = ((yearOfExpenses + yearOfExpenses1) / 2);
 			
 			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
@@ -1973,13 +2123,17 @@ void graph(string UserId)
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD1 << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE1 << RESET;
 			cout << endl;
-			cout << "\n_____________________";
-			cout << "\n\tReport";
-			cout << "\n_____________________";
+			cout << "\n____________________________________________________________________________________________";
+			cout << "\n\t\t\t\tReport";
+			cout << "\n____________________________________________________________________________________________";
 			cout << "\nPercentage of deposit in " << a << ": "; printf("%.2f", PDPT1); cout << "%";
 			cout << "\nPercentage of expenses in " << a << ": "; printf("%.2f", PEPS1); cout << "%";
 			cout << "\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
 			cout << "\nPercentage of expenses in " << b << ": "; printf("%.2f", PEPS2); cout << "%";
+			cout << "\nAverage of deposit for both years: ";  printf("%.2f",Ave);
+			cout << "\nAverage of expenses for both years: ";  printf("%.2f", Ave1);
+
+
 			if (yearOfDeposit>yearOfDeposit1)
 			{
 				cout << endl << endl;
