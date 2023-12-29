@@ -1621,10 +1621,10 @@ void graph(string UserId)
 	while(1)
 	{
 		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0, BGT = 0.0, yearOfBudget = 0.0, yearOfBudget1 = 0.0;
-		double PDPT, PEPS, TBA, PDPT1, PEPS1, PDPT2, PEPS2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3, Ave, Ave1;
-		int number1, number2, number3, number4, number5, number6, number7,CHGPTV;
-		int x, y, a, b, YOD, YOE, YOD1, YOE1;
-		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "", Budget = "";
+		double PDPT, PEPS, TBA, PDPT1, PEPS1, TBA1, PDPT2, PEPS2, TBA2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3, Ave, Ave1;
+		int number1, number2, number3, number4, number5, number6, number7, CHGPTV, number8, CHGPTV1, number9, CHGPTV2;
+		int x, y, a, b, YOD, YOE, YOB, YOD1, YOE1, YOB1;
+		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "", Budget = "", Budget1 = "", Budget2 = "";
 		string tmpMonth;
 
 		switch (GPH.prompt())
@@ -1861,7 +1861,7 @@ void graph(string UserId)
 					cout << "\n________________________________________________________________________________________";
 					cout << "\n\nPercentage of deposit: "; printf("%.2f", PDPT); cout << "%";
 					cout << "\nPercentage of expenses: "; printf("%.2f", PEPS); cout << "%";
-					cout << "\nTotal budget amount: RM"; printf("%.2f", TBA);
+					cout << "\nTotal budget amount: RM "; printf("%.2f", TBA);
 					_getch();
 					break;
 				}
@@ -1882,9 +1882,10 @@ void graph(string UserId)
 				{
 					YOE = 0;
 					YOD = 0;
+					YOB = 0;
 					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
 					yearOfExpenses = Transaction::totalExpensesInYear(UserId, a);
-					//yearOfBudget = Transaction::budgetRemainderYear(UserId, to_string(a));
+					yearOfBudget = Transaction::budgetRemainderYear(UserId, to_string(a));
 					break;
 				}
 				else 
@@ -1984,6 +1985,58 @@ void graph(string UserId)
 			}
 			stars = "";
 
+			if (yearOfBudget> 0 && yearOfBudget <= 10000)
+			{
+				YOB = 100;
+				number8 = static_cast<int>(yearOfBudget / YOB);
+				for (int i = 0; i < number8; i++)
+				{
+					stars += "*";
+				}
+				Budget1 += stars;
+			}
+			else if (yearOfBudget < 0) 
+			{
+				YOB = 100;
+				number8 = static_cast<int>(BGT / YOB);
+				CHGPTV1 = abs(number8);
+				for (int i = 0; i < CHGPTV1; i++)
+				{
+					stars += "*";
+				}
+				Budget1 += stars;
+			}
+			else if (yearOfBudget > 10000 && yearOfBudget <= 50000)
+			{
+				YOB = 500;
+				number8 = static_cast<int>(yearOfBudget / YOB);
+				for (int i = 0; i < number8; i++)
+				{
+					stars += "*";
+				}
+				Budget1 += stars;
+			}
+			else if (yearOfBudget > 50000 && yearOfBudget <= 250000)
+			{
+				YOB = 2500;
+				number8 = static_cast<int>(yearOfBudget / YOB);
+				for (int i = 0; i < number8; i++)
+				{
+					stars += "*";
+				}
+				Budget1 += stars;
+			}
+			else if (yearOfBudget > 250000)
+			{
+				YOB = 5000;
+				number8 = static_cast<int>(yearOfBudget / YOB);
+				for (int i = 0; i < number8; i++)
+				{
+					stars += "*";
+				}
+				Budget1 += stars;
+			}
+
 			while (1)
 			{
 				cout << "Enter second year: ";
@@ -1994,7 +2047,7 @@ void graph(string UserId)
 					YOE1 = 0;
 					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
 					yearOfExpenses1 = Transaction::totalExpensesInYear(UserId, b);
-					//yearOfBudget1 = Transaction::budgetRemainderYear(UserId, to_string(b));
+					yearOfBudget1 = Transaction::budgetRemainderYear(UserId, to_string(b));
 					break;
 				}
 				else
@@ -2093,6 +2146,59 @@ void graph(string UserId)
 				Expenses2 += stars;
 			}
 			stars = "";
+
+			if (yearOfBudget1 > 0 && yearOfBudget1 <= 10000)
+			{
+				YOB1 = 100;
+				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				for (int i = 0; i < number9; i++)
+				{
+					stars += "*";
+				}
+				Budget2 += stars;
+			}
+			else if (yearOfBudget1 < 0)
+			{
+				YOB1 = 100;
+				number9 = static_cast<int>(BGT / YOB1);
+				CHGPTV1 = abs(number9);
+				for (int i = 0; i < CHGPTV1; i++)
+				{
+					stars += "*";
+				}
+				Budget2 += stars;
+			}
+			else if (yearOfBudget1 > 10000 && yearOfBudget1 <= 50000)
+			{
+				YOB1 = 500;
+				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				for (int i = 0; i < number9; i++)
+				{
+					stars += "*";
+				}
+				Budget2 += stars;
+			}
+			else if (yearOfBudget1 > 50000 && yearOfBudget1 <= 250000)
+			{
+				YOB1 = 2500;
+				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				for (int i = 0; i < number9; i++)
+				{
+					stars += "*";
+				}
+				Budget2 += stars;
+			}
+			else if (yearOfBudget1 > 250000)
+			{
+				YOB1 = 5000;
+				number9 = static_cast<int>(yearOfBudget / YOB1);
+				for (int i = 0; i < number9; i++)
+				{
+					stars += "*";
+				}
+				Budget2 += stars;
+			}
+
 			PDPT1 = (yearOfDeposit / (yearOfDeposit + yearOfExpenses)) * 100;
 			PEPS1 = (yearOfExpenses / (yearOfDeposit + yearOfExpenses)) * 100;
 			PDPT2 = (yearOfDeposit1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
@@ -2107,30 +2213,52 @@ void graph(string UserId)
 			PDBTY3 = ((yearOfExpenses1 - yearOfExpenses) / yearOfExpenses1) * 100;
 			Ave = ((yearOfDeposit + yearOfDeposit1) / 2);
 			Ave1 = ((yearOfExpenses + yearOfExpenses1) / 2);
+			TBA1 = yearOfBudget + yearOfExpenses;
+			TBA2 = yearOfBudget1 + yearOfExpenses1;
 			
 			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
-			cout << "\nDeposit:  " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
-			cout << "\nExpenses: " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			cout << "\nDeposit:           " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
+			cout << "\nExpenses:          " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			if (yearOfBudget < 0)
+			{
+				cout << "\nBudget remainder: " << RED << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);
+			}
+			else
+			{
+				cout << "\nBudget remainder: " << CYAN << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);
+			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE << RESET;
+			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB << RESET;
 			cout << endl;
 
 			cout << "\n";
 			cout << "\nYear: " << GREEN << b << RESET;
-			cout << "\nDeposit:  " << CYAN << Deposit2 << RESET << " "; printf("%.2f", yearOfDeposit1);
-			cout << "\nExpenses: " << CYAN << Expenses2 << RESET << " "; printf("%.2f", yearOfExpenses1);
+			cout << "\nDeposit:          " << CYAN << Deposit2 << RESET << " "; printf("%.2f", yearOfDeposit1);
+			cout << "\nExpenses:         " << CYAN << Expenses2 << RESET << " "; printf("%.2f", yearOfExpenses1);
+			if (yearOfBudget1 < 0)
+			{
+				cout << "\nBudget remainder: " << RED << Budget2 << RESET << "  "; printf("%.2f", yearOfBudget1);
+			}
+			else
+			{
+				cout << "\nBudget remainder: " << CYAN << Budget2 << RESET << "  "; printf("%.2f", yearOfBudget1);
+			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD1 << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE1 << RESET;
+			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB1 << RESET;
 			cout << endl;
-			cout << "\n____________________________________________________________________________________________";
-			cout << "\n\t\t\t\tReport";
-			cout << "\n____________________________________________________________________________________________";
+			cout << "\n_______________________________________________________________________________________________";
+			cout << "\n\t\t\t\t\tReport";
+			cout << "\n_______________________________________________________________________________________________";
 			cout << "\nPercentage of deposit in " << a << ": "; printf("%.2f", PDPT1); cout << "%";
 			cout << "\nPercentage of expenses in " << a << ": "; printf("%.2f", PEPS1); cout << "%";
-			cout << "\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
+			cout << "\nTotal budget amount in "<<a<<" :RM "; printf("% .2f", TBA1);
+			cout << "\n\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
 			cout << "\nPercentage of expenses in " << b << ": "; printf("%.2f", PEPS2); cout << "%";
-			cout << "\nAverage of deposit for both years: ";  printf("%.2f",Ave);
+			cout << "\nTotal budget amount in " << b << " :RM "; printf("% .2f", TBA2);
+			cout << "\n\nAverage of deposit for both years: ";  printf("%.2f",Ave);
 			cout << "\nAverage of expenses for both years: ";  printf("%.2f", Ave1);
 
 
