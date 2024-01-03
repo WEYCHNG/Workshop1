@@ -9,6 +9,9 @@
 #include <regex>//checking alphabetical
 #include <cstdio>//printf
 #include <cmath>
+#include <map>
+#include <unordered_map>
+#include <string>
 
 //Project header
 #include "User.h"
@@ -51,7 +54,8 @@ void graph(string UserId);
 
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
-string getCurrentMonthAbbreviation();
+bool isValidFutureMonth(const string& insertedMonth);
+bool validateMonth(const string& startMonth, const string& endMonth);
 bool validateUsername(const string& username);
 bool isValidFirstName(const string& firstName);
 bool isValidLastName(const string& lastName);
@@ -532,11 +536,20 @@ User profile(User user) {
 		case 8:
 			cout <<RED<< "\t\tDelete your account? [Y/N]"<<RESET;
 			char confirm;
-			confirm = _getch();
+			confirm = _getch();//to enter input
 			if (confirm == 'Y' || confirm == 'y') {
 				user = temp;
 				user.remove();
 				main();
+			}
+			else if (confirm == 'N' || confirm == 'n')
+			{
+				break;
+			}
+			else
+			{
+				cout <<RED "\n\t\tInvalid input. Pleasee enter again..."<<RESET;
+				_getch();
 			}
 			break;
 		default:
@@ -661,29 +674,75 @@ string formatAmount(double amount) {
 	return formattedStream.str(); // Return the formatted string
 }
 
-string getCurrentMonthAbbreviation() {
-	// Get the current system time
-	auto now = std::chrono::system_clock::now();
+bool isValidFutureMonth(const string& insertedMonth) {
+	map<string, int> monthMap = {
+		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
+		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
+		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
+	};
 
-	// Convert the current time to a time_t object
-	std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+	time_t t = time(nullptr);
+	tm currentTime;
+	localtime_s(&currentTime, &t);
 
-	// Declare a tm structure
-	std::tm timeInfo;
-
-	// Use localtime_s to fill the tm structure with the current time information
-	if (localtime_s(&timeInfo, &currentTime) != 0) {
-		// Handle error if localtime_s fails
-		return "Error";
+	std::string currentMonthStr;
+	switch (currentTime.tm_mon) {
+	case 0: currentMonthStr = "Jan"; break;
+	case 1: currentMonthStr = "Feb"; break;
+	case 2: currentMonthStr = "Mar"; break;
+	case 3: currentMonthStr = "Apr"; break;
+	case 4: currentMonthStr = "May"; break;
+	case 5: currentMonthStr = "Jun"; break;
+	case 6: currentMonthStr = "Jul"; break;
+	case 7: currentMonthStr = "Aug"; break;
+	case 8: currentMonthStr = "Sep"; break;
+	case 9: currentMonthStr = "Oct"; break;
+	case 10: currentMonthStr = "Nov"; break;
+	case 11: currentMonthStr = "Dec"; break;
+	default: break;
 	}
 
-	// Array containing month abbreviations
-	const char* monthAbbreviations[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-										"Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	int currentMonth = monthMap[currentMonthStr];
+	int insertedMonthNum = monthMap[insertedMonth];
 
-	// Extract current month index and return its abbreviation
-	int currentMonthIndex = timeInfo.tm_mon;
-	return monthAbbreviations[currentMonthIndex];
+	if (insertedMonthNum >= currentMonth) {
+		return true;
+	}
+	return false;
+}
+
+bool validateMonth(const string& startMonth, const string& endMonth) {
+	auto currentTime = std::chrono::system_clock::now();
+	time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
+	std::tm now_tm;
+#ifdef _WIN32 // For Windows
+	localtime_s(&now_tm, &currentTime_t); // Thread-safe localtime for Windows
+#else // For other systems
+	localtime_r(&currentTime_t, &now_tm); // Thread-safe localtime for other systems
+#endif
+
+	int currentYear = now_tm.tm_year + 1900;
+	int currentMonth = now_tm.tm_mon + 1;
+
+	std::unordered_map<std::string, int> months = {
+		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
+		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
+		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
+	};
+
+	// Check if start month is in the future or current month
+	if (currentYear == now_tm.tm_year + 1900) {
+		if (months[startMonth] < currentMonth || startMonth == "Jan") {
+			return false;
+		}
+	}
+
+	// Check if end month is in the future and not before the start month
+	if (months[endMonth] < months[startMonth] || endMonth == "Jan") {
+		return false;
+	}
+
+	return true;
 }
 
 //1)Add account
@@ -708,8 +767,8 @@ void newAccount(string UserId)
 	time_t current = time(0); // get time in epoch seconds (since 1900)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
-	string abbreviation = getCurrentMonthAbbreviation();
-	
+	string insertedMonth,insertedMonth1;
+	string startMonth, endMonth;
 
 	while (1) {
 		
@@ -754,21 +813,24 @@ void newAccount(string UserId)
 			break;
 		case 4:
 			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			month = abbreviation;
-			cout<<month;
+			cin >> insertedMonth;
+
+			if (isValidFutureMonth(insertedMonth)) {
+				month = insertedMonth;
+			}
+			else {
+				cout << RED"\n\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
+			}
+
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 				accountMenu.setValue(3,addAccount.start_date);
-				addAccount.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(4, addAccount.end_date);
 			}
 			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
 			{
 				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 				accountMenu.setValue(3, addAccount.start_date);
-				addAccount.end_date = "30-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(4, addAccount.end_date);
 			}
 			else if (month == "Feb")
 			{
@@ -777,8 +839,6 @@ void newAccount(string UserId)
 				{
 					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					accountMenu.setValue(3, addAccount.start_date);
-					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
 				}
 				// not a leap year if divisible by 100
 				// but not divisible by 400
@@ -786,8 +846,6 @@ void newAccount(string UserId)
 				{
 					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					accountMenu.setValue(3, addAccount.start_date);
-					addAccount.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
 				}
 				// leap year if not divisible by 100
 				// but divisible by 4
@@ -795,14 +853,79 @@ void newAccount(string UserId)
 				{
 					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					accountMenu.setValue(3, addAccount.start_date);
-					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
 				}
 				// all other years are not leap years
 				else 
 				{
 					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					accountMenu.setValue(3, addAccount.start_date);
+				}
+			}
+			else
+			{
+				cout << RED"\t\tInvlaid input" RESET;
+				_getch();
+			}
+			startMonth = insertedMonth;
+			break;
+		case 5:
+			while (1)
+			{
+				cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
+				cin >> insertedMonth1;
+				if (isValidFutureMonth(insertedMonth1)) {
+					month = insertedMonth1;
+				}
+				else {
+					cout << RED"\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
+				}
+				endMonth = insertedMonth1;
+
+				if (validateMonth(startMonth, endMonth)) {
+					break;
+				}
+				else {
+					cout << RED"\n\t\tInput months are not valid according to the specified criteria. Please input again." RESET;
+					cout << "\n\n";
+				}
+			}
+
+
+			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
+			{
+				addAccount.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
+				accountMenu.setValue(4, addAccount.end_date);
+			}
+			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
+			{
+				addAccount.end_date = "30-" + month + "-" + to_string(now.tm_year + 1900);
+				accountMenu.setValue(4, addAccount.end_date);
+			}
+			else if (month == "Feb")
+			{
+				// leap year if perfectly divisible by 400
+				if ((now.tm_year + 1900) % 400 == 0)
+				{
+					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
+					accountMenu.setValue(4, addAccount.end_date);
+				}
+				// not a leap year if divisible by 100
+				// but not divisible by 400
+				else if ((now.tm_year + 1900) % 100 == 0)
+				{
+					addAccount.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
+					accountMenu.setValue(4, addAccount.end_date);
+				}
+				// leap year if not divisible by 100
+				// but divisible by 4
+				else if ((now.tm_year + 1900) % 4 == 0)
+				{
+					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
+					accountMenu.setValue(4, addAccount.end_date);
+				}
+				// all other years are not leap years
+				else
+				{
 					addAccount.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
 					accountMenu.setValue(4, addAccount.end_date);
 				}
@@ -812,8 +935,7 @@ void newAccount(string UserId)
 				cout << RED"\t\tInvlaid input" RESET;
 				_getch();
 			}
-			break;
-		case 5:
+			
 			break;
 		case 6:
 			addAccount.UserID = UserId;
@@ -925,7 +1047,7 @@ void modifyAccount(Account account,string UserID)
 	time_t current = time(0); // get time in epoch seconds (since 1900)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
-	string abbreviation = getCurrentMonthAbbreviation();
+	
 
 	string accountName = temp.account_name;
 	
@@ -961,7 +1083,7 @@ void modifyAccount(Account account,string UserID)
 			break;
 		case 4:
 			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			month = abbreviation;
+			//month = abbreviation;
 			cout << month;
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
