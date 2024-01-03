@@ -23,7 +23,7 @@ public:
 	void addAccount();
 	void update();
 	void updateAfterTrans();
-	void removeAccount();
+	void removeAccount(string UserID);
 	void getAccount(string UserId,string account_name);
 	void getBlcBdg(string UserId,int AccountID);
 	double totalAmount();

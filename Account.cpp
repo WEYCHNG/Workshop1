@@ -58,8 +58,9 @@ void Account::updateAfterTrans()
 }
 
 //Remove Account
-void Account::removeAccount() {
+void Account::removeAccount(string UserID) {
 	DBConnection db;
+	
 	db.prepareStatement("DELETE FROM account WHERE UserID=? AND account_name=?");
 	db.stmt->setString(1, UserID);
 	db.stmt->setString(2, account_name);

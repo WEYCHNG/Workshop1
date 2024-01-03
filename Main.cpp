@@ -113,7 +113,7 @@ bool isValidFirstName(const string& firstName) {
 
 bool isValidLastName(const string& lastName) {
 	// Regular expression to match only alphabetic characters with at least one space
-	regex pattern("^[a-zA-Z]+( [a-zA-Z]+)+$");
+	regex pattern("^[a-zA-Z]+( [a-zA-Z]+)*$");
 
 	// Check if the last name matches the pattern
 	return regex_match(lastName, pattern);
@@ -583,29 +583,29 @@ void AccountPage(string UserId)
 		if (displayString == "") {
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2)<< setw(5)  << "Account Name" << "|" << setw(18)<< "Balance"
+			tmpString << fixed << setprecision(2)<< setw(12)  << "Account Name" << "|" << setw(18)<< "Balance"
 				<< "|" << setw(23) << "Budget Remainder" << "|" << setw(23) << "Start date" << "|" << setw(23)  << "End date" <<  "|"<< endl;
 
 			
 			for (int i = 0; i < accounts.size(); i++) {
-				tmpString << setw(12) << accounts[i].account_name << "|" << setw(16);
+				tmpString << setw(12) << accounts[i].account_name << "|";
 				if (accounts[i].balance >0 )
 				{
-					tmpString << GREEN  << accounts[i].balance <<right<< WHITE;
+					tmpString << GREEN << setw(18) << accounts[i].balance << right << WHITE;
 				}
 				else
 				{
-					tmpString << RED <<accounts[i].balance << WHITE;
+					tmpString << RED << setw(18) << accounts[i].balance << WHITE;
 				}
 				
-				tmpString << "|" <<setw(21); 
+				tmpString << "|"; 
 				if(accounts[i].budget_amount >0)
 				{
-					tmpString << GREEN  << accounts[i].budget_amount<< right<<WHITE;
+					tmpString << GREEN << setw(23) << accounts[i].budget_amount << right << WHITE;
 				}
 				else
 				{
-					tmpString << RED  << accounts[i].budget_amount<<right<< WHITE;
+					tmpString << RED << setw(23) << accounts[i].budget_amount << right << WHITE;
 				}
 				tmpString << "|" << setw(23) << accounts[i].start_date << "|" << setw(23) << accounts[i].end_date << "|" << endl;
 			}
@@ -1018,8 +1018,18 @@ void modifyAccount(Account account,string UserID)
 			confirm = _getch();
 			if (confirm == 'Y' || confirm == 'y') {
 				account = temp;
-				account.removeAccount();
+				account.UserID = UserID;
+				account.removeAccount(account.UserID);
 				return ;
+			}
+			else if (confirm == 'N' || confirm == 'n')
+			{
+				break;
+			}
+			else
+			{
+				cout << "\nInvalid input! Please input [Y/N] only";
+				_getch();
 			}
 			break;
 		default:
@@ -2218,8 +2228,8 @@ void graph(string UserId)
 			
 			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
-			cout << "\nDeposit:           " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
-			cout << "\nExpenses:          " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			cout << "\nDeposit:            " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
+			cout << "\nExpenses:           " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
 			if (yearOfBudget < 0)
 			{
 				cout << "\nBudget remainder: " << RED << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);
