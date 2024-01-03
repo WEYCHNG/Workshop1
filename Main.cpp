@@ -1498,9 +1498,9 @@ void statistic(string UserId)
 
 	Menu TH;
 	TH.header = "\tStatistic";
-	TH.addOption(CYAN"Number of transaction" RESET);//1
+	TH.addOption(CYAN"Number of transaction(per month)" RESET);//1
 	TH.addOption(CYAN"Net transaction amount (per month)" RESET);//2
-	TH.addOption(CYAN"Total transaction amount" RESET);//3
+	TH.addOption(CYAN"Total transaction amount(per month/per week)" RESET);//3
 	TH.addOption("Graph");//4
 	TH.addOption("Back to User Page");//5
 
@@ -2228,8 +2228,8 @@ void graph(string UserId)
 			
 			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
-			cout << "\nDeposit:            " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
-			cout << "\nExpenses:           " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			cout << "\nDeposit:          " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
+			cout << "\nExpenses:         " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
 			if (yearOfBudget < 0)
 			{
 				cout << "\nBudget remainder: " << RED << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);

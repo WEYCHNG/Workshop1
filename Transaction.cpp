@@ -147,6 +147,8 @@ double Transaction::transAmount(string UserId)
 		"FROM transaction "
 		"JOIN account USING(AccountID) "
 		"WHERE UserID = ? "
+		"AND YEAR(transaction_date) = YEAR(NOW()) "
+		"AND MONTH(transaction_date) = MONTH(NOW()) "
 		"AND transaction_date >= DATE_SUB(DATE(NOW()), INTERVAL 1 WEEK) "
 		"AND transaction_date < DATE(NOW());");
 	db.stmt->setString(1, UserId);
