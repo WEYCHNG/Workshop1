@@ -1,5 +1,4 @@
 //System header
-//#include <windows.h>
 #include <conio.h>//_getch()
 #include <iomanip>//setw()
 #include <ctime>//get time
@@ -56,6 +55,7 @@ void graph(string UserId);
 string formatAmount(double amount);//to correct into 2 d.p.
 bool isValidFutureMonth(const string& insertedMonth);
 bool validateMonth(const string& startMonth, const string& endMonth);
+string getMonthAbbreviation(const string& dateStr);
 bool validateUsername(const string& username);
 bool isValidFirstName(const string& firstName);
 bool isValidLastName(const string& lastName);
@@ -65,6 +65,7 @@ bool isValidYear(const string& input);
 bool isValidYearAndMonth(const string& yearInput, const string& monthInput);
 //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
+//Register and login page
 int main()
 {
 	Menu LoginPage;
@@ -91,6 +92,7 @@ int main()
 	}
 }
 
+//validate UserID (username)
 bool validateUsername(const string& username) {
 	// Check length
 	if (username.length() < 3 || username.length() > 20) {
@@ -107,6 +109,7 @@ bool validateUsername(const string& username) {
 	return true;
 }
 
+//validateFirstName
 bool isValidFirstName(const string& firstName) {
 	// Regular expression to match only alphabetic characters
 	regex pattern("^[a-zA-Z]+$");
@@ -115,6 +118,7 @@ bool isValidFirstName(const string& firstName) {
 	return regex_match(firstName, pattern);
 }
 
+//validateLastName (can be space and no space)
 bool isValidLastName(const string& lastName) {
 	// Regular expression to match only alphabetic characters with at least one space
 	regex pattern("^[a-zA-Z]+( [a-zA-Z]+)*$");
@@ -123,6 +127,7 @@ bool isValidLastName(const string& lastName) {
 	return regex_match(lastName, pattern);
 }
 
+//validatePassword
 bool isValidPassword(const string& password) {
 	// Regular expressions for character classes
 	regex upper("(?=.*[A-Z])");
@@ -162,6 +167,7 @@ bool isValidPassword(const string& password) {
 	return true;
 }
 
+//validateEmail (email must has "@")
 bool isValidEmail(const string& email) {
 	// Regular expression pattern for email validation
 	regex pattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
@@ -561,6 +567,7 @@ User profile(User user) {
 //ACCOUNT PAGE
 void AccountPage(string UserId)
 {
+	//add budget amount
 	Account account;
 	Transaction transaction;
 	vector<Account> accounts;
@@ -890,7 +897,6 @@ void newAccount(string UserId)
 				}
 			}
 
-
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
 				addAccount.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
@@ -938,10 +944,28 @@ void newAccount(string UserId)
 			
 			break;
 		case 6:
-			addAccount.UserID = UserId;
-			addAccount.addAccount();
-			cout << CYAN<<"\t\tAdd sucessful !"<<RESET;
-			_getch();
+			cout << CYAN << "\t\tAre you sure to confirm? [Y/N]" << RESET;
+			cout << RED"\n\t\tNote: 'Start Date' will not be change again!\n" << RESET;
+			char confirm;
+			confirm = _getch();//to enter input
+			if (confirm == 'Y' || confirm == 'y') {
+				addAccount.UserID = UserId;
+				addAccount.addAccount();
+				cout << CYAN << "\t\tAdd sucessful !" << RESET;
+				_getch();
+				return;
+				break;
+			}
+			else if (confirm == 'N' || confirm == 'n')
+			{
+				break;
+			}
+			else
+			{
+				cout << RED "\n\t\tInvalid input. Pleasee enter again..." << RESET;
+				_getch();
+			}
+			break;
 		case 7:
 			//return account;//create account page
 			return;
@@ -1023,6 +1047,18 @@ void modifyAccountPage(string confirmation,string UserId)
 	}
 }
 
+string getMonthAbbreviation(const string& dateStr) {
+	// Months abbreviation array
+	const std::string months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+								  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+	// Extract month abbreviation (e.g., "Dec" from "12-Dec-2023")
+	std::string extractedMonth = dateStr.substr(3, 3); // Assuming the month abbreviation is always at positions 3-5
+
+	return extractedMonth;
+}
+
+////////////////////////////////////////////Need to redo budget amount date!
 //2)Modify account
 void modifyAccount(Account account,string UserID)
 { 
@@ -1048,8 +1084,8 @@ void modifyAccount(Account account,string UserID)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
 	
-
 	string accountName = temp.account_name;
+	string insertedMonth1,endMonth,startMonth,dateStr;
 	
 	while(1)
 	{
@@ -1082,45 +1118,65 @@ void modifyAccount(Account account,string UserID)
 			cin >> temp.budget_amount;
 			break;
 		case 4:
-			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			//month = abbreviation;
-			cout << month;
+			break;
+		case 5:
+			dateStr = account.start_date;
+			startMonth = getMonthAbbreviation(dateStr);
+			while (1)
+			{
+				cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
+				cin >> insertedMonth1;
+				if (isValidFutureMonth(insertedMonth1)) {
+					month = insertedMonth1;
+				}
+				else {
+					cout << RED"\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
+				}
+
+				endMonth = insertedMonth1;
+
+				if (validateMonth(startMonth, endMonth)) {
+					break;
+				}
+				else {
+					cout << RED"\n\t\tInput months are not valid according to the specified criteria. Please input again." RESET;
+					cout << "\n\n";
+				}
+			}
+
 			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
 			{
-				temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+				//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 				temp.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
 			}
 			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
 			{
-				temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+				//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 				temp.end_date = "30-" + month + "-" + to_string(now.tm_year + 1900);
 			}
 			else if (month == "Feb")
 			{
 				if ((now.tm_year + 1900) % 400 == 0)
 				{
-					temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					temp.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
 				}
 				else if ((now.tm_year + 1900) % 100 == 0)
 				{
-					temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					temp.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
 				}
 				else if ((now.tm_year + 1900) % 4 == 0)
 				{
-					temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					temp.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
 				}
 				else
 				{
-					temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
+					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
 					temp.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
 				}
 			}
-			break;
-		case 5:
-			
 			break;
 		case 6:
 			temp = account;
@@ -1745,12 +1801,12 @@ bool isValidYearAndMonth(const string& yearInput, const string& monthInput) {
 void graph(string UserId)
 {
 	Menu GPH;
-	GPH.header="\tGraph";
+	GPH.header = "\tGraph";
 	GPH.addOption("Deposit Versus Expenses in same month");
 	GPH.addOption("Deposit Versus Expenses between two different years");
 	GPH.addOption("Back to statistic");
-	
-	while(1)
+
+	while (1)
 	{
 		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0, BGT = 0.0, yearOfBudget = 0.0, yearOfBudget1 = 0.0;
 		double PDPT, PEPS, TBA, PDPT1, PEPS1, TBA1, PDPT2, PEPS2, TBA2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3, Ave, Ave1;
@@ -1824,8 +1880,8 @@ void graph(string UserId)
 					}
 
 					BGT = Transaction::budgetRemainder(UserId, tmpMonth, to_string(y));
-				
-					if (DPT > 0 && DPT<=1000) 
+
+					if (DPT > 0 && DPT <= 1000)
 					{
 						h = 10;
 						number1 = static_cast<int>(DPT / h); //converts a given expression to a specified type
@@ -1871,17 +1927,17 @@ void graph(string UserId)
 					}
 					stars = "";
 
-					if (EPS >0 && EPS<=1000) 
+					if (EPS > 0 && EPS <= 1000)
 					{
 						j = 10;
 						number2 = static_cast<int>(EPS / j);
-						for (int i = 0; i < number2; i++) 
+						for (int i = 0; i < number2; i++)
 						{
 							stars += "*";
 						}
 						Expenses += stars;
 					}
-					else if (EPS>1000 && EPS<=5000)
+					else if (EPS > 1000 && EPS <= 5000)
 					{
 						j = 50;
 						number2 = static_cast<int>(EPS / j);
@@ -2010,7 +2066,7 @@ void graph(string UserId)
 			{
 				cout << "Enter first year: ";
 				cin >> a;
-				if (isValidYear(to_string(a))) 
+				if (isValidYear(to_string(a)))
 				{
 					YOE = 0;
 					YOD = 0;
@@ -2020,9 +2076,9 @@ void graph(string UserId)
 					yearOfBudget = Transaction::budgetRemainderYear(UserId, to_string(a));
 					break;
 				}
-				else 
+				else
 				{
-					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." <<endl;
+					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." << endl;
 					cout << "Please enter first year again! " << endl;
 				}
 			}
@@ -2072,7 +2128,7 @@ void graph(string UserId)
 			}
 			stars = "";
 
-			if (yearOfExpenses > 0 && yearOfExpenses<=10000)
+			if (yearOfExpenses > 0 && yearOfExpenses <= 10000)
 			{
 				YOE = 100;
 				number4 = static_cast<int>(yearOfExpenses / YOE);
@@ -2117,7 +2173,7 @@ void graph(string UserId)
 			}
 			stars = "";
 
-			if (yearOfBudget> 0 && yearOfBudget <= 10000)
+			if (yearOfBudget > 0 && yearOfBudget <= 10000)
 			{
 				YOB = 100;
 				number8 = static_cast<int>(yearOfBudget / YOB);
@@ -2127,7 +2183,7 @@ void graph(string UserId)
 				}
 				Budget1 += stars;
 			}
-			else if (yearOfBudget < 0) 
+			else if (yearOfBudget < 0)
 			{
 				YOB = 100;
 				number8 = static_cast<int>(BGT / YOB);
@@ -2202,7 +2258,7 @@ void graph(string UserId)
 			else if (yearOfDeposit1 < 0) {
 				throw out_of_range("Deposit value is negative.");
 			}
-			else if (yearOfDeposit1>10000 && yearOfDeposit1<=50000)
+			else if (yearOfDeposit1 > 10000 && yearOfDeposit1 <= 50000)
 			{
 				YOD1 = 500;
 				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
@@ -2212,7 +2268,7 @@ void graph(string UserId)
 				}
 				Deposit2 += stars;
 			}
-			else if (yearOfDeposit1>50000&&yearOfDeposit1<=250000)
+			else if (yearOfDeposit1 > 50000 && yearOfDeposit1 <= 250000)
 			{
 				YOD1 = 2500;
 				number5 = static_cast<int>(yearOfDeposit1 / YOD1);
@@ -2236,7 +2292,7 @@ void graph(string UserId)
 
 			if (yearOfExpenses1 > 0 && yearOfExpenses1 <= 10000)
 			{
-				YOE1=100;
+				YOE1 = 100;
 				number6 = static_cast<int>(yearOfExpenses1 / YOE1);
 				for (int i = 0; i < number6; i++)
 				{
@@ -2247,7 +2303,7 @@ void graph(string UserId)
 			else if (yearOfExpenses1 < 0) {
 				throw out_of_range("Expenses value is negative.");
 			}
-			else if (yearOfExpenses1>10000&&yearOfExpenses1<=50000)
+			else if (yearOfExpenses1 > 10000 && yearOfExpenses1 <= 50000)
 			{
 				YOE1 = 500;
 				number5 = static_cast<int>(yearOfExpenses1 / YOE1);
@@ -2257,7 +2313,7 @@ void graph(string UserId)
 				}
 				Expenses2 += stars;
 			}
-			else if (yearOfExpenses1>50000&&yearOfExpenses1<=250000)
+			else if (yearOfExpenses1 > 50000 && yearOfExpenses1 <= 250000)
 			{
 				YOE1 = 2500;
 				number5 = static_cast<int>(yearOfExpenses1 / YOE1);
@@ -2334,7 +2390,7 @@ void graph(string UserId)
 			PDPT1 = (yearOfDeposit / (yearOfDeposit + yearOfExpenses)) * 100;
 			PEPS1 = (yearOfExpenses / (yearOfDeposit + yearOfExpenses)) * 100;
 			PDPT2 = (yearOfDeposit1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
-			PEPS2= (yearOfExpenses1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
+			PEPS2 = (yearOfExpenses1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
 			PBTY = (yearOfDeposit / (yearOfDeposit + yearOfDeposit1)) * 100;
 			PBTY1 = (yearOfDeposit1 / (yearOfDeposit + yearOfDeposit1)) * 100;
 			PBTY2 = (yearOfExpenses / (yearOfExpenses + yearOfExpenses1)) * 100;
@@ -2347,7 +2403,7 @@ void graph(string UserId)
 			Ave1 = ((yearOfExpenses + yearOfExpenses1) / 2);
 			TBA1 = yearOfBudget + yearOfExpenses;
 			TBA2 = yearOfBudget1 + yearOfExpenses1;
-			
+
 			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
 			cout << "\nDeposit:          " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
@@ -2362,7 +2418,14 @@ void graph(string UserId)
 			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE << RESET;
-			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB << RESET;
+			if (yearOfBudget < 0)
+			{
+				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB << RESET;
+			}
+			else
+			{
+				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB << RESET;
+			}
 			cout << endl;
 
 			cout << "\n";
@@ -2379,28 +2442,35 @@ void graph(string UserId)
 			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD1 << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE1 << RESET;
-			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB1 << RESET;
+			if (yearOfBudget1 < 0)
+			{
+				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB1 << RESET;
+			}
+			else
+			{
+				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB1 << RESET;
+			}
 			cout << endl;
 			cout << "\n_______________________________________________________________________________________________";
 			cout << "\n\t\t\t\t\tReport";
 			cout << "\n_______________________________________________________________________________________________";
 			cout << "\nPercentage of deposit in " << a << ": "; printf("%.2f", PDPT1); cout << "%";
 			cout << "\nPercentage of expenses in " << a << ": "; printf("%.2f", PEPS1); cout << "%";
-			cout << "\nTotal budget amount in "<<a<<" :RM "; printf("% .2f", TBA1);
+			cout << "\nTotal budget amount in " << a << " :RM "; printf("% .2f", TBA1);
 			cout << "\n\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
 			cout << "\nPercentage of expenses in " << b << ": "; printf("%.2f", PEPS2); cout << "%";
 			cout << "\nTotal budget amount in " << b << " :RM "; printf("% .2f", TBA2);
-			cout << "\n\nAverage of deposit for both years: ";  printf("%.2f",Ave);
+			cout << "\n\nAverage of deposit for both years: ";  printf("%.2f", Ave);
 			cout << "\nAverage of expenses for both years: ";  printf("%.2f", Ave1);
 
 
-			if (yearOfDeposit>yearOfDeposit1)
+			if (yearOfDeposit > yearOfDeposit1)
 			{
 				cout << endl << endl;
 				cout << a << " has higher deposit than " << b;
 				cout << "\nPercentage of deposit in " << a << " is "; printf("%.2f", PBTY); cout << "%";
 				cout << "\nPercentage of deposit in " << b << " is "; printf("%.2f", PBTY1); cout << "%";
-				cout << "\nPercentage of deposit in " << a << " more than " << b<<" is "; printf("%.2f", PDBTY); cout << "%";
+				cout << "\nPercentage of deposit in " << a << " more than " << b << " is "; printf("%.2f", PDBTY); cout << "%";
 			}
 			else
 			{
@@ -2408,7 +2478,7 @@ void graph(string UserId)
 				cout << b << " has higher deposit than " << a;
 				cout << "\nPercentage of deposit in " << a << " is "; printf("%.2f", PBTY); cout << "%";
 				cout << "\nPercentage of deposit in " << b << " is "; printf("%.2f", PBTY1); cout << "%";
-				cout << "\nPercentage of deposit in " << b << " more than " << a<<" is "; printf("%.2f", PDBTY1); cout << "%";
+				cout << "\nPercentage of deposit in " << b << " more than " << a << " is "; printf("%.2f", PDBTY1); cout << "%";
 			}
 			if (yearOfExpenses > yearOfExpenses1)
 			{
@@ -2416,7 +2486,7 @@ void graph(string UserId)
 				cout << a << " has higher expenses than " << b;
 				cout << "\nPercentage of expenses in " << a << " is "; printf("%.2f", PBTY2); cout << "%";
 				cout << "\nPercentage of expenses in " << b << " is "; printf("%.2f", PBTY3); cout << "%";
-				cout << "\nPercentage of expenses in " << a << " more than " << b<<" is "; printf("%.2f", PDBTY2); cout << "%";
+				cout << "\nPercentage of expenses in " << a << " more than " << b << " is "; printf("%.2f", PDBTY2); cout << "%";
 			}
 			else
 			{
@@ -2424,7 +2494,7 @@ void graph(string UserId)
 				cout << b << " has higher expenses than " << a;
 				cout << "\nPercentage of expenses in " << a << " is "; printf("%.2f", PBTY2); cout << "%";
 				cout << "\nPercentage of expenses in " << b << " is "; printf("%.2f", PBTY3); cout << "%";
-				cout << "\nPercentage of expenses in " << b << " more than " << a <<" is "; printf("%.2f", PDBTY3); cout << "%";
+				cout << "\nPercentage of expenses in " << b << " more than " << a << " is "; printf("%.2f", PDBTY3); cout << "%";
 			}
 			_getch();
 			break;
