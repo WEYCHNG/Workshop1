@@ -10,7 +10,7 @@ class Account
 {
 public:
 	int AccountID;
-	double budget_amount, balance;
+	double budget_amount,budget_remainder,balance;
 	string UserID,account_name,start_date,end_date;
 	
 	Account(); // constructor method
@@ -24,10 +24,12 @@ public:
 	void update();
 	void updateAfterTrans();
 	void removeAccount(string UserID);
+	void deleteAllTransaction(string UserID, string account_name);
 	void getAccount(string UserId,string account_name);
 	void getBlcBdg(string UserId,int AccountID);
 	double totalAmount();
-	double chgeByTrans(string UserID);
+	//double chgeByTrans(string UserID);
+	void getStartDateAndEndDate(int AccountID);
 	
 	~Account();
 };

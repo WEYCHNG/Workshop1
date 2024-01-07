@@ -11,6 +11,7 @@
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <stdexcept>
 
 //Project header
 #include "User.h"
@@ -53,8 +54,9 @@ void graph(string UserId);
 
 //Other
 string formatAmount(double amount);//to correct into 2 d.p.
-bool isValidFutureMonth(const string& insertedMonth);
-bool validateMonth(const string& startMonth, const string& endMonth);
+bool isValidEndDate(const string& startMonth, int startYear, const string& endMonth, int endYear);
+bool isValidFutureMonth(const string& insertedMonth, const int insertedYear);
+int getYear(const string& dateStr);
 string getMonthAbbreviation(const string& dateStr);
 bool validateUsername(const string& username);
 bool isValidFirstName(const string& firstName);
@@ -63,6 +65,7 @@ bool isValidPassword(const string& password);
 bool isValidEmail(const string& email);
 bool isValidYear(const string& input);
 bool isValidYearAndMonth(const string& yearInput, const string& monthInput);
+bool endDateWithCurrentDate(const string& startMonth, int startYear, const string& endMonth, int endYear);
 //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //Register and login page
@@ -222,7 +225,7 @@ void registerAccount() {
 				cnMenu.setValue(1, newacc.first_name);
 			}
 			else {
-				std::cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET<< endl;
+				cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET<< endl;
 				_getch();
 			}
 			break;
@@ -300,10 +303,18 @@ void registerAccount() {
 			cnMenu.setValue(5, newacc.phone_number);
 			break;
 		case 7:
-			newacc.insert();
-			cout <<YELLOW<< "Register sucessfull !\n\n"<<RESET;
-			_getch();
-			return;
+			if (newacc.UserId.empty() || newacc.first_name.empty() || newacc.last_name.empty() || newacc.password.empty() || newacc.phone_number.empty() || newacc.email.empty())
+			{
+				cout << RED"\n\t\tRegistration details is not completed. Please complete it." << RESET;
+			}
+			else 
+			{
+				newacc.insert();
+				cout << YELLOW << "Register sucessfull !\n\n" << RESET;
+				_getch();
+				return;
+			}
+			break;
 		case 8:
 			return;
 			break;
@@ -531,10 +542,17 @@ User profile(User user) {
 			temp = user;
 			break;
 		case 6:
-			user = temp;
-			user.update();
-			cout << CYAN"\t\tUpdated"<<RESET;
-			_getch();
+			if (temp.first_name.empty() || temp.last_name.empty() || temp.password.empty() || temp.phone_number.empty())
+			{
+				cout << RED"\n\t\tProfile in not completed. Please complete it."<<RESET;
+			}
+			else
+			{
+				user = temp;
+				user.update();
+				cout << CYAN"\t\tUpdated" << RESET;
+				_getch();
+			}
 			break;
 		case 7:
 			return user;
@@ -567,7 +585,6 @@ User profile(User user) {
 //ACCOUNT PAGE
 void AccountPage(string UserId)
 {
-	//add budget amount
 	Account account;
 	Transaction transaction;
 	vector<Account> accounts;
@@ -604,30 +621,30 @@ void AccountPage(string UserId)
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
 			tmpString << fixed << setprecision(2)<< setw(12)  << "Account Name" << "|" << setw(18)<< "Balance"
-				<< "|" << setw(23) << "Budget Remainder" << "|" << setw(23) << "Start date" << "|" << setw(23)  << "End date" <<  "|"<< endl;
-
+				<< "|" << setw(23) << "Budget Amount" << "|" << setw(23) << "Budget Remainder" << "|"<<setw(23) << "Start date" << "|" << setw(23)  << "End date" <<  "|"<< endl;
+			tmpString << setw(13) << "-------------" << setw(19) << "--------" << setw(24) << "--------------" << setw(24) << "-----------------" << setw(24) << "-----------" << setw(24) << "---------" << endl;
 			
 			for (int i = 0; i < accounts.size(); i++) {
 				tmpString << setw(12) << accounts[i].account_name << "|";
 				if (accounts[i].balance >0 )
 				{
-					tmpString << GREEN << setw(18) << accounts[i].balance << right << WHITE;
+					tmpString << GREEN << setw(18) << accounts[i].balance  << WHITE;
 				}
 				else
 				{
 					tmpString << RED << setw(18) << accounts[i].balance << WHITE;
 				}
 				
-				tmpString << "|"; 
-				if(accounts[i].budget_amount >0)
+				tmpString << "|" << setw(23) << accounts[i].budget_amount << "|";
+				if(accounts[i].budget_remainder >=0)
 				{
-					tmpString << GREEN << setw(23) << accounts[i].budget_amount << right << WHITE;
+					tmpString << GREEN << setw(23) << accounts[i].budget_remainder << WHITE;
 				}
 				else
 				{
-					tmpString << RED << setw(23) << accounts[i].budget_amount << right << WHITE;
+					tmpString << RED << setw(23) << accounts[i].budget_remainder << WHITE;
 				}
-				tmpString << "|" << setw(23) << accounts[i].start_date << "|" << setw(23) << accounts[i].end_date << "|" << endl;
+				tmpString << "|" <<setw(23) << accounts[i].start_date << "|" << setw(23) << accounts[i].end_date << "|" << endl;
 			}
 			displayString += tmpString.str();
 		}
@@ -681,8 +698,9 @@ string formatAmount(double amount) {
 	return formattedStream.str(); // Return the formatted string
 }
 
-bool isValidFutureMonth(const string& insertedMonth) {
-	map<string, int> monthMap = {
+//compare insert month and year with current month and year
+bool isValidFutureMonth(const string& insertedMonth, const int insertedYear) {
+	std::map<std::string, int> monthMap = {
 		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
 		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
 		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
@@ -692,69 +710,39 @@ bool isValidFutureMonth(const string& insertedMonth) {
 	tm currentTime;
 	localtime_s(&currentTime, &t);
 
-	std::string currentMonthStr;
-	switch (currentTime.tm_mon) {
-	case 0: currentMonthStr = "Jan"; break;
-	case 1: currentMonthStr = "Feb"; break;
-	case 2: currentMonthStr = "Mar"; break;
-	case 3: currentMonthStr = "Apr"; break;
-	case 4: currentMonthStr = "May"; break;
-	case 5: currentMonthStr = "Jun"; break;
-	case 6: currentMonthStr = "Jul"; break;
-	case 7: currentMonthStr = "Aug"; break;
-	case 8: currentMonthStr = "Sep"; break;
-	case 9: currentMonthStr = "Oct"; break;
-	case 10: currentMonthStr = "Nov"; break;
-	case 11: currentMonthStr = "Dec"; break;
-	default: break;
-	}
+	int currentMonth = currentTime.tm_mon + 1;
+	int currentYear = currentTime.tm_year + 1900;
 
-	int currentMonth = monthMap[currentMonthStr];
 	int insertedMonthNum = monthMap[insertedMonth];
 
-	if (insertedMonthNum >= currentMonth) {
+	if (insertedYear > currentYear || (insertedYear == currentYear && insertedMonthNum >= currentMonth)) {
 		return true;
 	}
 	return false;
 }
 
-bool validateMonth(const string& startMonth, const string& endMonth) {
-	auto currentTime = std::chrono::system_clock::now();
-	time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
-	std::tm now_tm;
-#ifdef _WIN32 // For Windows
-	localtime_s(&now_tm, &currentTime_t); // Thread-safe localtime for Windows
-#else // For other systems
-	localtime_r(&currentTime_t, &now_tm); // Thread-safe localtime for other systems
-#endif
-
-	int currentYear = now_tm.tm_year + 1900;
-	int currentMonth = now_tm.tm_mon + 1;
-
-	std::unordered_map<std::string, int> months = {
+//compare satrt date and end date
+bool isValidEndDate(const string& startMonth, int startYear, const string& endMonth, int endYear) {
+	map<string, int> monthMap = {
 		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
 		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
 		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
 	};
 
-	// Check if start month is in the future or current month
-	if (currentYear == now_tm.tm_year + 1900) {
-		if (months[startMonth] < currentMonth || startMonth == "Jan") {
-			return false;
-		}
-	}
+	int startMonthNum = monthMap[startMonth];
+	int endMonthNum = monthMap[endMonth];
 
-	// Check if end month is in the future and not before the start month
-	if (months[endMonth] < months[startMonth] || endMonth == "Jan") {
-		return false;
+	// Comparing years first, then months if years are equal
+	if (endYear > startYear || (endYear == startYear && endMonthNum >= startMonthNum)) {
+		return true;
 	}
-
-	return true;
+	return false;
 }
 
 //1)Add account
 void newAccount(string UserId) 
 {
+	//need to redo!(compare two month but forgot to comment two year)
 	Account addAccount;
 	Menu accountMenu;
 	accountMenu.header = "\t\tAdd Account";
@@ -774,8 +762,11 @@ void newAccount(string UserId)
 	time_t current = time(0); // get time in epoch seconds (since 1900)
 	tm now; // create a struct/object of tm to hold data
 	localtime_s(&now, &current); //populate the now object with data from current
-	string insertedMonth,insertedMonth1;
-	string startMonth, endMonth;
+	string insertedMonth = "", insertedMonth1 = "", tempInsertedStartMonth;
+	int insertedYear = 0, insertedYear1 = 0, tempInsertedStartYear;
+	int startMonthNum;
+	int endMonthNum;
+	string tmpEndMonth, tmpStartMonth;
 
 	while (1) {
 		
@@ -813,159 +804,271 @@ void newAccount(string UserId)
 				cout << "\nPlease enter budget amount again: ";
 				cin >> addAccount.budget_amount;
 			}
+			addAccount.budget_remainder = addAccount.budget_amount;
 			// Format the budget amount using formatAmount function
 			formattedBudget = formatAmount(addAccount.budget_amount);
 			// Set the formatted string to the menu value
 			accountMenu.setValue(2, formattedBudget);
 			break;
 		case 4:
-			cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-			cin >> insertedMonth;
+			while (1)
+			{
+				try {
+					cout << "Start date:";
+					// Prompt user for month input (abbreviation)
+					cout << "\nEnter month abbreviation (e.g., Jan, Feb...): ";
+					cin >> insertedMonth;
+					// Check if the input is a valid month abbreviation (case-insensitive)
+				
 
-			if (isValidFutureMonth(insertedMonth)) {
-				month = insertedMonth;
-			}
-			else {
-				cout << RED"\n\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
-			}
+					if (insertedMonth != "Jan" && insertedMonth != "Feb" && insertedMonth != "Mar" &&
+						insertedMonth != "Apr" && insertedMonth != "May" && insertedMonth != "Jun" &&
+						insertedMonth != "Jul" && insertedMonth != "Aug" && insertedMonth != "Sep" &&
+						insertedMonth != "Oct" && insertedMonth != "Nov" && insertedMonth != "Dec") {
+						throw invalid_argument(RED"\t\tInvalid input for month! Please enter a valid abbreviation (e.g., Jan, Feb...).");
+					}
 
-			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
-			{
-				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(3,addAccount.start_date);
-			}
-			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
-			{
-				addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(3, addAccount.start_date);
-			}
-			else if (month == "Feb")
-			{
-				// leap year if perfectly divisible by 400
-				if ((now.tm_year + 1900) % 400 == 0)
-				{
-					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(3, addAccount.start_date);
+					// Prompt user for year input
+					cout << "Enter year (Example: 2023, 2024...): ";
+					cin >> insertedYear;
+
+					// Check if input failed or not a four-digit integer
+					if (cin.fail() || insertedYear < 1000 || insertedYear > 9999) {
+						throw invalid_argument(RED"\t\tInvalid input for year! Please enter a four-digit integer.");
+					}
 				}
-				// not a leap year if divisible by 100
-				// but not divisible by 400
-				else if ((now.tm_year + 1900) % 100 == 0)
-				{
-					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(3, addAccount.start_date);
+				catch (const invalid_argument& e) {
+					// Catch the exception and display the error message
+					cout << e.what() << endl;
+
+					// Clear error state to allow new input
+					cin.clear(); // Clear error state
+					cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+					_getch();
+					insertedMonth = "";
+					insertedYear = 0;
+					break;
 				}
-				// leap year if not divisible by 100
-				// but divisible by 4
-				else if ((now.tm_year + 1900) % 4 == 0)
+
+				map<string, int> monthMap = {{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}};
+
+				tmpStartMonth = insertedMonth;
+				tmpEndMonth = insertedMonth1;
+				startMonthNum = monthMap[tmpStartMonth];
+				endMonthNum = monthMap[tmpEndMonth];
+
+				if (insertedMonth1=="" && insertedYear1 == 0)//End_date is empty
 				{
-					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(3, addAccount.start_date);
+					//To check start month and start year is invalid or not compare to current month
+					if (isValidFutureMonth(insertedMonth, insertedYear))
+					{
+						month = insertedMonth;
+					}
+					else {//Invalid
+						cout << RED"\n\t\tInvalid insertion! You can only insert the current/future month and insert the current/future year." RESET << endl;
+						_getch();
+						//If invalid need to reset back
+						insertedMonth = "";
+						insertedYear = 0;
+						break;
+					}
+
+					if (month == "Jan" || month == "Feb" || month == "Mar" || month == "Apr" || month == "May" || month == "Jun" || month == "Jul" || month == "Aug" || month == "Sep" || month == "Oct" || month == "Nov" || month == "Dec")
+					{
+						addAccount.start_date = "01-" + month + "-" + to_string(insertedYear);
+						accountMenu.setValue(3, addAccount.start_date);
+						tempInsertedStartMonth = insertedMonth;//to store true month
+						tempInsertedStartYear = insertedYear;//to store true year
+					}
+					break;
 				}
-				// all other years are not leap years
-				else 
+				//Check check start_date not beyond than end_date
+				else if(insertedYear < insertedYear1 || (insertedYear == insertedYear1 && startMonthNum<= endMonthNum))
 				{
-					addAccount.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(3, addAccount.start_date);
+
+					if (isValidFutureMonth(insertedMonth, insertedYear))//To check start month and start year is invalid or not compare to current month
+					{
+						
+						if (isValidEndDate(insertedMonth, insertedYear, insertedMonth1, insertedYear1))//To compare start_date and end_date
+						{
+							month = insertedMonth;
+						}
+						else {
+							cout << RED"\n\t\tStart date cannot be inserted as it is not before the end date." RESET << endl;
+							_getch();
+							insertedMonth = tempInsertedStartMonth;
+							insertedYear = tempInsertedStartYear;
+							break;
+						}
+					}
+					else
+					{
+						cout << RED"\n\t\tInvalid insertion! You can only insert the current/future month and insert the current/future year." RESET << endl;
+						_getch();
+						insertedMonth = tempInsertedStartMonth;
+						insertedYear = tempInsertedStartYear;
+						break;
+					}
+
+					if (month == "Jan" || month == "Feb" || month == "Mar" || month == "Apr" || month == "May" || month == "Jun" || month == "Jul" || month == "Aug" || month == "Sep" || month == "Oct" || month == "Nov" || month == "Dec")
+					{
+						addAccount.start_date = "01-" + month + "-" + to_string(insertedYear);
+						accountMenu.setValue(3, addAccount.start_date);
+					}
+					break;
+				}
+				else
+				{
+					cout << RED"\n\t\tStart date cannot be inserted as it is not before the end date." RESET;
+					cout << endl;
+					_getch();
+					insertedMonth = tempInsertedStartMonth;
+					insertedYear = tempInsertedStartYear;
+					break;
 				}
 			}
-			else
-			{
-				cout << RED"\t\tInvlaid input" RESET;
-				_getch();
-			}
-			startMonth = insertedMonth;
 			break;
 		case 5:
 			while (1)
 			{
-				cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-				cin >> insertedMonth1;
-				if (isValidFutureMonth(insertedMonth1)) {
-					month = insertedMonth1;
-				}
-				else {
-					cout << RED"\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
-				}
-				endMonth = insertedMonth1;
-
-				if (validateMonth(startMonth, endMonth)) {
+				if (insertedMonth == "" && insertedYear == 0)
+				{
+					cout << RED"\n\t\tStart date is empty! Please fill in start date first..." RESET;
+					cout << endl;
+					_getch();
 					break;
 				}
-				else {
-					cout << RED"\n\t\tInput months are not valid according to the specified criteria. Please input again." RESET;
-					cout << "\n\n";
-				}
-			}
-
-			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
-			{
-				addAccount.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(4, addAccount.end_date);
-			}
-			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
-			{
-				addAccount.end_date = "30-" + month + "-" + to_string(now.tm_year + 1900);
-				accountMenu.setValue(4, addAccount.end_date);
-			}
-			else if (month == "Feb")
-			{
-				// leap year if perfectly divisible by 400
-				if ((now.tm_year + 1900) % 400 == 0)
-				{
-					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
-				}
-				// not a leap year if divisible by 100
-				// but not divisible by 400
-				else if ((now.tm_year + 1900) % 100 == 0)
-				{
-					addAccount.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
-				}
-				// leap year if not divisible by 100
-				// but divisible by 4
-				else if ((now.tm_year + 1900) % 4 == 0)
-				{
-					addAccount.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
-				}
-				// all other years are not leap years
 				else
 				{
-					addAccount.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
-					accountMenu.setValue(4, addAccount.end_date);
+					try {
+						cout << "End date:";
+						// Prompt user for month input (abbreviation)
+						cout << "\nEnter month abbreviation (e.g., Jan, Feb...): ";
+						cin >> insertedMonth1;
+
+						if (insertedMonth1 != "Jan" && insertedMonth1 != "Feb" && insertedMonth1 != "Mar" &&
+							insertedMonth1 != "Apr" && insertedMonth1 != "May" && insertedMonth1 != "Jun" &&
+							insertedMonth1 != "Jul" && insertedMonth1 != "Aug" && insertedMonth1 != "Sep" &&
+							insertedMonth1 != "Oct" && insertedMonth1 != "Nov" && insertedMonth1 != "Dec") {
+							throw invalid_argument(RED"\t\tInvalid input for month! Please enter a valid abbreviation (e.g., Jan, Feb...)." RESET);
+						}
+
+						// Prompt user for year input
+						cout << "Enter year (Example: 2023, 2024...): ";
+						cin >> insertedYear1;
+
+						// Check if input failed or not a four-digit integer
+						if (cin.fail() || insertedYear1 < 1000 || insertedYear1 > 9999) {
+							throw invalid_argument(RED"\t\tInvalid input for year! Please enter a four-digit integer." RESET);
+						}
+					}
+					catch (const std::invalid_argument& e) {
+						// Catch the exception and display the error message
+						cout << e.what() << endl;
+
+						// Clear error state to allow new input
+						cin.clear(); // Clear error state
+						cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+						insertedMonth1 = "";
+						insertedYear1 = 0;
+						_getch();
+						break;
+					}
+
+					if (isValidFutureMonth(insertedMonth1, insertedYear1)) {//To check end month and end year is invalid or not compare to current month
+						month = insertedMonth1;
+					}
+					else {
+						cout << RED"\t\tInvalid insertion! You can only insert the current/future month and insert the current/future year." RESET << endl;
+						_getch();
+						insertedMonth1 = "";
+						insertedYear1 = 0;
+						break;
+					}
+
+					if (isValidEndDate(insertedMonth, insertedYear, insertedMonth1, insertedYear1))//To compare start_date and end_date
+					{//If end date valid 
+						if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
+						{
+							addAccount.end_date = "31-" + month + "-" + to_string(insertedYear1);
+							accountMenu.setValue(4, addAccount.end_date);
+						}
+						else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
+						{
+							addAccount.end_date = "30-" + month + "-" + to_string(insertedYear1);
+							accountMenu.setValue(4, addAccount.end_date);
+						}
+						else if (month == "Feb")
+						{
+							// leap year if perfectly divisible by 400
+							if ((insertedYear1) % 400 == 0)
+							{
+								addAccount.end_date = "29-" + month + "-" + to_string(insertedYear1);
+								accountMenu.setValue(4, addAccount.end_date);
+							}
+							// not a leap year if divisible by 100
+							// but not divisible by 400
+							else if ((insertedYear1) % 100 == 0)
+							{
+								addAccount.end_date = "28-" + month + "-" + to_string(insertedYear1);
+								accountMenu.setValue(4, addAccount.end_date);
+							}
+							// leap year if not divisible by 100
+							// but divisible by 4
+							else if ((insertedYear1) % 4 == 0)
+							{
+								addAccount.end_date = "29-" + month + "-" + to_string(insertedYear1);
+								accountMenu.setValue(4, addAccount.end_date);
+							}
+							// all other years are not leap years
+							else
+							{
+								addAccount.end_date = "28-" + month + "-" + to_string(insertedYear1);
+								accountMenu.setValue(4, addAccount.end_date);
+							}
+
+						}
+						break;
+					}
+					else {
+						cout << RED"\n\t\tEnd date cannot be inserted as it is not after the start date." RESET<< endl;
+						_getch();
+						cout << endl;
+						break;
+					}
 				}
 			}
-			else
-			{
-				cout << RED"\t\tInvlaid input" RESET;
-				_getch();
-			}
-			
 			break;
 		case 6:
-			cout << CYAN << "\t\tAre you sure to confirm? [Y/N]" << RESET;
-			cout << RED"\n\t\tNote: 'Start Date' will not be change again!\n" << RESET;
-			char confirm;
-			confirm = _getch();//to enter input
-			if (confirm == 'Y' || confirm == 'y') {
-				addAccount.UserID = UserId;
-				addAccount.addAccount();
-				cout << CYAN << "\t\tAdd sucessful !" << RESET;
-				_getch();
-				return;
+			if (addAccount.account_name.empty() || addAccount.start_date.empty() || addAccount.end_date.empty())
+			{
+				cout << RED"\n\t\tAccount is not complete to fill in." << RESET << endl;
+			}
+			else 
+			{
+				cout << CYAN << "\t\tAre you sure to confirm? [Y/N]" << RESET;
+				cout << RED"\n\t\tNote: 'Start Date' will not be change again!\n" << RESET;
+				char confirm;
+				confirm = _getch();//to enter input
+				if (confirm == 'Y' || confirm == 'y') {
+					addAccount.UserID = UserId;
+					addAccount.addAccount();
+					cout << CYAN << "\t\tAdd sucessful !" << RESET;
+					_getch();
+					return;
+					break;
+				}
+				else if (confirm == 'N' || confirm == 'n')
+				{
+					break;
+				}
+				else
+				{
+					cout << RED "\n\t\tInvalid input. Pleasee enter again..." << RESET;
+					_getch();
+				}
 				break;
 			}
-			else if (confirm == 'N' || confirm == 'n')
-			{
-				break;
-			}
-			else
-			{
-				cout << RED "\n\t\tInvalid input. Pleasee enter again..." << RESET;
-				_getch();
-			}
-			break;
 		case 7:
 			//return account;//create account page
 			return;
@@ -997,7 +1100,7 @@ void modifyAccountPage(string confirmation,string UserId)
 			disPlayAcc = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
 			tmpString << fixed << setprecision(2) << setw(5) << "Account Name" << "|" << endl;
-
+			tmpString << setw(6) << "-------------" << endl;
 			for (int i = 0; i < Acc.size(); i++) {
 				tmpString << setw(12) << Acc[i].account_name << "|" << endl;
 			}
@@ -1047,6 +1150,7 @@ void modifyAccountPage(string confirmation,string UserId)
 	}
 }
 
+//To get month of abbreviation
 string getMonthAbbreviation(const string& dateStr) {
 	// Months abbreviation array
 	const std::string months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -1058,12 +1162,21 @@ string getMonthAbbreviation(const string& dateStr) {
 	return extractedMonth;
 }
 
-////////////////////////////////////////////Need to redo budget amount date!
+//to get year
+int getYear(const string& dateStr) {
+	// Extract year (e.g., 2023 from "12-Dec-2023")
+	istringstream iss(dateStr);
+	string day, month, year;
+	getline(iss, day, '-');
+	getline(iss, month, '-');
+	getline(iss, year, '-');
+	return std::stoi(year);
+}
+
 //2)Modify account
 void modifyAccount(Account account,string UserID)
 { 
 	Account temp = account;
-
 	Menu modifyAccMenu;
 	modifyAccMenu.header = "\t\t\t\t\tEdit information of account / wallet";
 	modifyAccMenu.addOption("Account name");//1
@@ -1085,7 +1198,8 @@ void modifyAccount(Account account,string UserID)
 	localtime_s(&now, &current); //populate the now object with data from current
 	
 	string accountName = temp.account_name;
-	string insertedMonth1,endMonth,startMonth,dateStr;
+	string insertedMonth1, endMonth, startMonth, dateStr, dateStr1;
+	int insertedYear1,startYear,endYear;
 	
 	while(1)
 	{
@@ -1107,74 +1221,124 @@ void modifyAccount(Account account,string UserID)
 			if (temp.account_name.empty())
 			{
 				temp.account_name = accountName;
+				getline(cin, temp.account_name);
 			}
 			break;
 		case 2:
 			cout << "Enter new balance: RM ";
 			cin >> temp.balance;
+			if (temp.balance <= 0)
+			{
+				cout << RED"\n\t\tNew balance is insufficient!" << RESET << endl << endl;
+				_getch();
+				cin >> temp.balance;
+			}
 			break;
 		case 3:
 			cout << "Enter new budget amount: RM ";
 			cin >> temp.budget_amount;
+			temp.budget_remainder = temp.budget_amount;
+			if (temp.budget_amount <= 0)
+			{
+				cout << RED"\n\t\tNew budget amount is insufficient!" << RESET << endl << endl;
+				cin >> temp.budget_amount;
+				temp.budget_remainder = temp.budget_amount;
+			}
 			break;
 		case 4:
 			break;
 		case 5:
 			dateStr = account.start_date;
 			startMonth = getMonthAbbreviation(dateStr);
+			startYear = getYear(dateStr);
+			dateStr1 = account.end_date;
+			endMonth = getMonthAbbreviation(dateStr1);
+			endYear = getYear(dateStr1);
 			while (1)
 			{
-				cout << "Fisrt 3 letter abbreviation of month for set budget amount (Example: Jan,Feb): ";
-				cin >> insertedMonth1;
-				if (isValidFutureMonth(insertedMonth1)) {
+				try {
+					cout << "End date:";
+					// Prompt user for month input (abbreviation)
+					cout << "\nEnter month abbreviation (e.g., Jan, Feb...): ";
+					cin >> insertedMonth1;
+
+					if (insertedMonth1 != "Jan" && insertedMonth1 != "Feb" && insertedMonth1 != "Mar" &&
+						insertedMonth1 != "Apr" && insertedMonth1 != "May" && insertedMonth1 != "Jun" &&
+						insertedMonth1 != "Jul" && insertedMonth1 != "Aug" && insertedMonth1 != "Sep" &&
+						insertedMonth1 != "Oct" && insertedMonth1 != "Nov" && insertedMonth1 != "Dec") {
+						throw invalid_argument(RED"\t\tInvalid input for month! Please enter a valid abbreviation (e.g., Jan, Feb...)." RESET);
+					}
+
+					// Prompt user for year input
+					cout << "Enter year (Example: 2023, 2024...): ";
+					cin >> insertedYear1;
+
+					// Check if input failed or not a four-digit integer
+					if (cin.fail() || insertedYear1 < 1000 || insertedYear1 > 9999) {
+						throw invalid_argument(RED"\t\tInvalid input for year! Please enter a four-digit integer." RESET);
+					}
+				}
+				catch (const std::invalid_argument& e) {
+					// Catch the exception and display the error message
+					cout << e.what() << endl;
+
+					// Clear error state to allow new input
+					cin.clear(); // Clear error state
+					cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+					insertedMonth1 = endMonth;
+					insertedYear1 = endYear;
+					_getch();
+				}
+			
+				if (isValidFutureMonth(insertedMonth1, insertedYear1)) {
 					month = insertedMonth1;
 				}
 				else {
-					cout << RED"\t\tInvalid insertion! You can only insert the current month or a future month within the same year." RESET << endl;
+					cout << RED"\t\tInvalid insertion! You can only insert the current/future month and insert the current/future year." RESET << endl;
+					_getch();
+					insertedMonth1 = endMonth;
+					insertedYear1 = endYear;
+					break;
 				}
 
-				endMonth = insertedMonth1;
-
-				if (validateMonth(startMonth, endMonth)) {
+				if (isValidEndDate(startMonth, startYear, insertedMonth1, insertedYear1))
+				{//If end date valid 
+					if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
+					{
+						temp.end_date = "31-" + month + "-" + to_string(insertedYear1);
+					}
+					else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
+					{
+						temp.end_date = "30-" + month + "-" + to_string(insertedYear1);
+					}
+					else if (month == "Feb")
+					{
+						if ((insertedYear1) % 400 == 0)
+						{
+							temp.end_date = "29-" + month + "-" + to_string(insertedYear1);
+						}
+						else if ((insertedYear1) % 100 == 0)
+						{
+							temp.end_date = "28-" + month + "-" + to_string(insertedYear1);
+						}
+						else if ((insertedYear1) % 4 == 0)
+						{
+							temp.end_date = "29-" + month + "-" + to_string(insertedYear1);
+						}
+						else
+						{
+							temp.end_date = "28-" + month + "-" + to_string(insertedYear1);
+						}
+					}
 					break;
 				}
 				else {
-					cout << RED"\n\t\tInput months are not valid according to the specified criteria. Please input again." RESET;
-					cout << "\n\n";
-				}
-			}
-
-			if (month == "Jan" || month == "Mar" || month == "May" || month == "Jul" || month == "Aug" || month == "Oct" || month == "Dec")
-			{
-				//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-				temp.end_date = "31-" + month + "-" + to_string(now.tm_year + 1900);
-			}
-			else if (month == "Apr" || month == "Jun" || month == "Sep" || month == "Nov")
-			{
-				//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-				temp.end_date = "30-" + month + "-" + to_string(now.tm_year + 1900);
-			}
-			else if (month == "Feb")
-			{
-				if ((now.tm_year + 1900) % 400 == 0)
-				{
-					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					temp.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-				}
-				else if ((now.tm_year + 1900) % 100 == 0)
-				{
-					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					temp.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
-				}
-				else if ((now.tm_year + 1900) % 4 == 0)
-				{
-					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					temp.end_date = "29-" + month + "-" + to_string(now.tm_year + 1900);
-				}
-				else
-				{
-					//temp.start_date = "01-" + month + "-" + to_string(now.tm_year + 1900);
-					temp.end_date = "28-" + month + "-" + to_string(now.tm_year + 1900);
+					cout << RED"\t\n\nEnd date cannot be inserted as it is not after the start date." RESET << endl;
+					cout << endl;
+					_getch();
+					insertedMonth1 = endMonth;
+					insertedYear1 = endYear;
+					break;
 				}
 			}
 			break;
@@ -1185,18 +1349,22 @@ void modifyAccount(Account account,string UserID)
 			account = temp;
 			account.UserID = UserID;
 			account.update();
-			cout << CYAN << "Updated" << RESET;
+			cout << CYAN << "\t\tUpdated" << RESET;
 			_getch();
 		case 8:
 			return ;
 			break;
 		case 9:
-			cout << RED << "Delete your account? [Y/N]" << RESET;
+			cout << RED << "Delete your account? [Y/N]";
+			cout << "\nNote: Are you sure to delete account? All the transaction also will be delete." << RESET<< endl;
 			char confirm;
 			confirm = _getch();
 			if (confirm == 'Y' || confirm == 'y') {
 				account = temp;
 				account.UserID = UserID;
+				
+				// delete transaction first then delete account
+				account.deleteAllTransaction(account.UserID, account.account_name);
 				account.removeAccount(account.UserID);
 				return ;
 			}
@@ -1206,7 +1374,7 @@ void modifyAccount(Account account,string UserID)
 			}
 			else
 			{
-				cout << "\nInvalid input! Please input [Y/N] only";
+				cout << "\nInvalid input! Please input Y/N only";
 				_getch();
 			}
 			break;
@@ -1249,6 +1417,37 @@ void TransactionPage(string UserId)
 	}
 }
 
+//To compare end_date with current_current date
+bool endDateWithCurrentDate(const string& startMonth, int startYear, const string& endMonth, int endYear) {
+	std::map<std::string, int> monthMap = {
+		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
+		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
+		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
+	};
+
+	// Get the current date
+	auto now = chrono::system_clock::now();
+	time_t currentTime = chrono::system_clock::to_time_t(now);
+	tm currentDate = {};
+	localtime_s(&currentDate, &currentTime);
+
+	int currentMonth = currentDate.tm_mon + 1; // tm_mon is 0-indexed
+	int currentYear = currentDate.tm_year + 1900; // tm_year is years since 1900
+
+	int startMonthNum = monthMap[startMonth];
+	int endMonthNum = monthMap[endMonth];
+
+	// Comparing years first, then months if years are equal
+	if (endYear > currentYear || (endYear == currentYear && endMonthNum >= currentMonth))
+	{//compare current_date with end_date
+		if (startYear < currentYear || (startYear == currentYear && startMonthNum <= currentMonth))
+		{//compare current_date with start_date
+			return true;
+		}
+	}
+	return false;
+}
+
 void newTrans(string UserID, string account_name)
 {
 	Transaction addTrans;
@@ -1267,7 +1466,7 @@ void newTrans(string UserID, string account_name)
 	homeTrans.addOption("Category");//4
 	homeTrans.addOption("Description");//5
 	homeTrans.addOption("New balance");//6
-	homeTrans.addOption("New budget amount");//7
+	homeTrans.addOption("Budeget remainder");//7
 	homeTrans.addOption("Confirm");//8
 	homeTrans.addOption("Back to transaction page");//9
 
@@ -1278,12 +1477,19 @@ void newTrans(string UserID, string account_name)
 	string accountName;
 	double tempAmount;
 	double tempBudget;
+	string startDate, startMonth, endDate, endMonth;
+	int startOfYear,endOfYear;
+
 
 	while (1)
 	{
 		homeTrans.setValue(0, account_name);
 		account.getAccount(UserID, account_name);//get account data
+		account.getStartDateAndEndDate(account.AccountID);
 		addTrans.AccountID = account.AccountID;
+
+		startDate = account.start_date;
+		endDate = account.end_date;
 		if (Expenses) 
 		{
 			addTrans.transaction_type = "Expenses";
@@ -1348,7 +1554,7 @@ void newTrans(string UserID, string account_name)
 				formattednewBalance = formatAmount(tempAmount);
 				homeTrans.setValue(5, formattednewBalance);
 
-				tempBudget = account.budget_amount - addTrans.transaction_amount;
+				tempBudget = account.budget_remainder - addTrans.transaction_amount;
 				formattednewBudgetAmount = formatAmount(tempBudget);
 				homeTrans.setValue(6, formattednewBudgetAmount);
 			}
@@ -1358,8 +1564,7 @@ void newTrans(string UserID, string account_name)
 				formattednewBalance = formatAmount(tempAmount);
 				homeTrans.setValue(5, formattednewBalance);
 
-				tempBudget = account.budget_amount;
-				formattednewBudgetAmount = formatAmount(account.budget_amount);
+				formattednewBudgetAmount = formatAmount(account.budget_remainder);
 				homeTrans.setValue(6, formattednewBudgetAmount);
 			}
 			break;
@@ -1368,11 +1573,29 @@ void newTrans(string UserID, string account_name)
 		case 8:
 			addTrans.newbalance = tempAmount;
 			account.balance = tempAmount;
-			account.budget_amount = tempBudget;
-			addTrans.addTrans();
-			account.updateAfterTrans();
-			cout << CYAN"Transaction is create" RESET;
-			_getch();
+			account.budget_remainder = tempBudget;
+
+			//string space wrongly
+			startMonth = getMonthAbbreviation(startDate);
+			startOfYear = getYear(startDate);
+			endMonth = getMonthAbbreviation(endDate);
+			endOfYear = getYear(endDate);
+		
+			if (endDateWithCurrentDate(startMonth, startOfYear, endMonth, endOfYear))
+			{
+				addTrans.addTrans();
+				account.updateAfterTrans();
+				cout << CYAN"\n\t\tTransaction is create" RESET;
+				_getch();
+				return TransactionPage(UserID);
+				break;
+			}
+			else 
+			{
+				cout << RED"\n\t\tThe end date is in the past. Please change end date first!" << RESET << endl;
+				_getch();
+			}
+			break;
 		case 9:
 			return TransactionPage(UserID);
 			break;
@@ -1420,35 +1643,38 @@ void transHistory(string UserId)
 		{
 			displayString = BLUE"\nSearch Result:\n" RESET;
 			stringstream tmpString;
-			tmpString << fixed << setprecision(2) << setw(5) << "Transaction ID" << "|" << setw(25)
-				<< "Transaction Type" << "|" << setw(28) << "Transaction Amount" << "|" << setw(20)
-				<< "Category" << "|" << setw(20) << "Description" << "|" << setw(20) << "Newbalance" << "|"
-				<< setw(25) << "Transaction date" << "|" << endl;
+			tmpString << fixed << setprecision(2) << setw(15) << "Transaction ID" << "|" << setw(25)
+				<< "Transaction Type" << "|" << setw(28) << "Transaction Amount" << "|" << setw(23)
+				<< "Category" << "|" << setw(23) << "Description" << "|" << setw(18) << "Newbalance" << "|"
+				<< setw(28) << "Transaction date" << "|" << endl;
+			tmpString << setw(16) << "---------------" << setw(26) << "-----------------" << setw(29) 
+				<< "-------------------" << setw(24) << "---------" << setw(24) << "------------" << setw(19) 
+				<< "-----------" << setw(29) << "-----------------" << endl;
 
 			for (int i = 0; i < trans.size(); i++) 
 			{
-				tmpString << setw(14) << trans[i].TransactionID << "|" << setw(25)<< trans[i].transaction_type << "|" << setw(26);
+				tmpString << setw(15) << trans[i].TransactionID << "|" << setw(25) << trans[i].transaction_type << "|";
 
 				if (trans[i].transaction_type == "Deposit")
 				{
-					tmpString << GREEN "+" << trans[i].transaction_amount << WHITE;
+					tmpString << setw(24) << GREEN "+" <<setw(9)<< trans[i].transaction_amount << WHITE;
 				}
 				else
 				{
-					tmpString << RED "-" << trans[i].transaction_amount << WHITE;
+					tmpString << setw(24) << RED "-" << setw(9) << trans[i].transaction_amount << WHITE;
 				}
 
-				tmpString << "|" << setw(20) << trans[i].category << "|" << setw(20) << trans[i].description << "|" << setw(18);
+				tmpString << "|" << setw(23) << trans[i].category << "|" << setw(23) << trans[i].description << "|";
 
 				if (trans[i].newbalance < 0)
 				{
-					tmpString << RED"-" << trans[i].newbalance << WHITE;
+					tmpString << RED << setw(18) << trans[i].newbalance << WHITE;
 				}
 				else
 				{
-					tmpString << GREEN << trans[i].newbalance << WHITE;
+					tmpString << GREEN <<setw(18) << trans[i].newbalance << WHITE;
 				}
-				tmpString << "|" << setw(25) << trans[i].transaction_date << "|" << endl;
+				tmpString << "|" << setw(28) << trans[i].transaction_date << "|" << endl;
 			}
 			displayString += tmpString.str();
 		}
@@ -1504,7 +1730,6 @@ void transHistory(string UserId)
 	}
 }
 
-//still need to change
 void modifyTrans(Transaction transaction,string UserId)
 {
 	Transaction temp = transaction;
@@ -1542,8 +1767,10 @@ void modifyTrans(Transaction transaction,string UserId)
 	double oldTransAmount = 0;
 	double oldNewBalance = 0;
 	double latestBudget = 0;
+	string startOfMonth,startDate,endOfMonth,endDate;
+	int startOfYear,endOfYear;
 
-	account.getBlcBdg(UserId, account.AccountID);
+	account.getBlcBdg(UserId, account.AccountID);//get balance and budget remainder
 
 	oldTransAmount = temp.transaction_amount;
 	oldNewBalance = temp.newbalance;
@@ -1554,7 +1781,7 @@ void modifyTrans(Transaction transaction,string UserId)
 
 		account.budget_amount = account.budget_amount + oldTransAmount;//get original budget
 		initialBalance = account.balance;
-		initialBudget = account.budget_amount;
+		initialBudget = account.budget_remainder;
 	}
 	else if (temp.transaction_type == "Deposit")
 	{
@@ -1564,6 +1791,10 @@ void modifyTrans(Transaction transaction,string UserId)
 
 	while (1)
 	{
+		account.getStartDateAndEndDate(account.AccountID);
+		startDate = account.start_date;
+		endDate = account.end_date;
+
 		if (temp.transaction_type == "Deposit" || temp.transaction_type == "Expenses")
 		{
 			modifyTrans.setValue(0, temp.transaction_type);
@@ -1604,13 +1835,21 @@ void modifyTrans(Transaction transaction,string UserId)
 			break;
 		case 3:
 			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
-			cin >> temp.category;
+			getline(cin, temp.category);
+			if (temp.category.empty())
+			{
+				getline(cin, temp.category);
+			}
 			break;
 		case 4:
 			cout << "Description: ";
 			if (temp.transaction_type == "Expenses")
 			{
-				cin >> temp.description;
+				getline(cin, temp.description);
+				if (temp.description.empty())
+				{
+					getline(cin, temp.description);
+				}
 			}
 			else
 			{
@@ -1623,23 +1862,37 @@ void modifyTrans(Transaction transaction,string UserId)
 			}
 			else {
 				tempAmount = initialBalance + temp.transaction_amount;
-				tempBudget = account.budget_amount;
+				tempBudget = account.budget_remainder;
 			}
 
 			temp.newbalance = tempAmount;
 			account.balance = tempAmount;
-			account.budget_amount = tempBudget;
+			account.budget_remainder = tempBudget;
 
 			break;
 		case 6:
 			temp = transaction;
 			break;
 		case 7:
-			transaction = temp;
-			transaction.updateTrans(transaction.TransactionID);
-			account.updateAfterTrans();
-			cout << CYAN"Updated !" RESET;
-			_getch();
+			startOfMonth = getMonthAbbreviation(startDate);
+			startOfYear = getYear(startDate);
+			endOfMonth = getMonthAbbreviation(endDate);
+			endOfYear = getYear(endDate);
+			//to check transaction is can/cannot to edit and makesure transaction date is between the range of start date and end date of budget.
+			if (endDateWithCurrentDate(startOfMonth, startOfYear, endOfMonth, endOfYear))
+			{
+				transaction = temp;
+				transaction.updateTrans(transaction.TransactionID);
+				account.updateAfterTrans();
+				cout << CYAN"\n\t\tUpdated !" RESET;
+				_getch();
+			}
+			else
+			{
+				cout << RED "\n\t\tThis transaction cannot be edit due to end date is in the past. Please change end date of budget first!" << RESET << endl;
+				_getch();
+			}
+			break;
 		case 8:
 			return;
 			break;
@@ -1653,6 +1906,7 @@ void modifyTrans(Transaction transaction,string UserId)
 				account.updateAfterTrans();
 				return;
 			}
+			else if(confirm)
 			break;
 		default:
 			break;
@@ -1808,22 +2062,46 @@ void graph(string UserId)
 
 	while (1)
 	{
-		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0, BGT = 0.0, yearOfBudget = 0.0, yearOfBudget1 = 0.0;
-		double PDPT, PEPS, TBA, PDPT1, PEPS1, TBA1, PDPT2, PEPS2, TBA2, PBTY, PBTY1, PBTY2, PBTY3, PDBTY, PDBTY1, PDBTY2, PDBTY3, Ave, Ave1;
+		double DPT = 0.0, EPS = 0.0, yearOfDeposit = 0.0, yearOfExpenses = 0.0, yearOfDeposit1 = 0.0, yearOfExpenses1 = 0.0, NetTrs = 0.0, yearOfNetTransaction = 0.0, yearOfNetTransaction1 = 0.0;
+		double PDPT, PEPS, PDPT1, PEPS1, PDPT2, PEPS2, PBTY, PBTY1, PBTY2, PBTY3, PBTY4, PBTY5, PDBTY, PDBTY1, PDBTY2, PDBTY3, PDBTY4, PDBTY5, Ave, Ave1, Ave2;
 		int number1, number2, number3, number4, number5, number6, number7, CHGPTV, number8, CHGPTV1, number9, CHGPTV2;
 		int x, y, a, b, YOD, YOE, YOB, YOD1, YOE1, YOB1;
-		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "", Budget = "", Budget1 = "", Budget2 = "";
+		string Deposit = "", Expenses = "", stars = "", Deposit1 = "", Expenses1 = "", Deposit2 = "", Expenses2 = "", NetTrans = "", NetTrans1 = "", NetTrans2 = "";
 		string tmpMonth;
 
 		switch (GPH.prompt())
 		{
 		case 1:
 			while (1)//infinite loop that runs continually until a break statement is explicitly issued
-			{
-				cout << "\nEnter month (Example: Jan=1,Feb=2...): ";
-				cin >> x;
-				cout << "Enter year (Example: 2023,2024...): ";
-				cin >> y;
+			{	
+				try {
+					// Prompt user for month input
+					cout << "\nEnter month [integer number from 1 to 12]: ";
+					cin >> x;
+
+					// Check if input failed or not within the valid range (1-12)
+					if (cin.fail() || x < 1 || x > 12) {
+						throw invalid_argument(RED"Invalid input for month! Please enter an integer between 1 and 12." RESET);
+					}
+
+					// Prompt user for year input
+					cout << "\nEnter year (Example: 2023, 2024...): ";
+					cin >> y;
+
+					// Check if input failed or not a four-digit integer
+					if (cin.fail() || y < 1000 || y > 9999) {
+						throw invalid_argument(RED"Invalid input for year! Please enter a four-digit integer." RESET);
+					}
+				}
+				catch (const invalid_argument& e) {
+					// Catch the exception and display the error message
+					cout << e.what() << std::endl;
+
+					// Clear error state to allow new input
+					cin.clear(); // Clear error state
+					cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+				}
+
 				if (isValidYearAndMonth(to_string(y), to_string(x)))
 				{
 					int j = 0, h = 0, t = 0;
@@ -1879,7 +2157,7 @@ void graph(string UserId)
 						tmpMonth = "Dec";
 					}
 
-					BGT = Transaction::budgetRemainder(UserId, tmpMonth, to_string(y));
+					NetTrs = DPT - EPS;
 
 					if (DPT > 0 && DPT <= 1000)
 					{
@@ -1974,89 +2252,89 @@ void graph(string UserId)
 
 					stars = "";
 
-					if (BGT > 0 && BGT <= 1000)
+					if (NetTrs > 0 && NetTrs <= 1000)
 					{
 						t = 10;
-						number7 = static_cast<int>(BGT / t);
+						number7 = static_cast<int>(NetTrs / t);
 						for (int i = 0; i < number7; i++)
 						{
 							stars += "*";
 						}
-						Budget += stars;
+						NetTrans += stars;
 					}
-					else if (BGT > 1000 && BGT <= 5000)
+					else if (NetTrs > 1000 && NetTrs <= 5000)
 					{
 						t = 50;
-						number7 = static_cast<int>(BGT / t);
+						number7 = static_cast<int>(NetTrs / t);
 						for (int i = 0; i < number7; i++)
 						{
 							stars += "*";
 						}
-						Budget += stars;
+						NetTrans += stars;
 					}
-					else if (BGT < 0)
+					else if (NetTrs < 0)
 					{
 						t = 100;
-						number7 = static_cast<int>(BGT / t);
-						CHGPTV = abs(number7);
+						number7 = static_cast<int>(NetTrs / t);
+						CHGPTV = abs(number7);//to make in positive value (clear negative sign)
 						for (int i = 0; i < CHGPTV; i++)
 						{
 							stars += "*";
 						}
-						Budget += stars;
+						NetTrans += stars;
 					}
-					else if (BGT > 5000 && BGT <= 25000)
+					else if (NetTrs > 5000 && NetTrs <= 25000)
 					{
 						t = 250;
-						number7 = static_cast<int>(BGT / t);
+						number7 = static_cast<int>(NetTrs / t);
 						for (int i = 0; i < number7; i++)
 						{
 							stars += "*";
 						}
-						Budget += stars;
+						NetTrans += stars;
 					}
-					else if (BGT > 25000)
+					else if (NetTrs > 25000)
 					{
 						t = 500;
-						number7 = static_cast<int>(BGT / t);
+						number7 = static_cast<int>(NetTrs / t);
 						for (int i = 0; i < number7; i++)
 						{
 							stars += "*";
 						}
-						Budget += stars;
+						NetTrans += stars;
 					}
 					PDPT = (DPT / (DPT + EPS)) * 100;
 					PEPS = (EPS / (DPT + EPS)) * 100;
-					TBA = EPS + BGT;
-
 					cout << "\n\n";
-					cout << "------------------------------------------- " << YELLOW  "Date(MM-YYYY): " << x << "-" << y << RESET << " -----------------------------------------------------";
-					cout << "\n\nDeposit:          " << CYAN << Deposit << RESET << "  "; printf("%.2f", DPT);
-					cout << "\nExpeneses:        " << CYAN << Expenses << RESET << "  "; printf("%.2f", EPS);
-					if (BGT < 0)
+					cout << "--------------------------------------------- " << YELLOW  "Date(MM-YYYY): " << x << "-" << y << RESET << " -------------------------------------------------------";
+					cout << "\n\nDeposit:                " << CYAN << Deposit << RESET << "  "; printf("%.2f", DPT);
+					cout << "\nExpeneses:              " << CYAN << Expenses << RESET << "  "; printf("%.2f", EPS);
+					if (NetTrs < 0)
 					{
-						cout << "\nBudget remainder: " << RED << Budget << RESET << "  "; printf("%.2f", BGT);
+						cout << "\nNet transaction amount: " << RED << NetTrans << RESET << "  "; printf("%.2f", NetTrs);
 					}
 					else
 					{
-						cout << "\nBudget remainder: " << CYAN << Budget << RESET << "  "; printf("%.2f", BGT);
+						cout << "\nNet transaction amount: " << CYAN << NetTrans << RESET << "  "; printf("%.2f", NetTrs);
 					}
 					cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << h << RESET;
 					cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << j << RESET;
-					cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << t << RESET;
+					if (NetTrs < 0)
+					{
+						cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®net trnasaction amount¡¯" << RESET << " means negative value" << GREEN << " RM " << t << RESET;
+					}
+					else
+					{
+						cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®net trnasaction amount¡¯" << RESET << " means negative value" << GREEN << " RM " << t << RESET;
+					}
 					cout << "\n________________________________________________________________________________________";
 					cout << "\n\t\t\t\tReport";
 					cout << "\n________________________________________________________________________________________";
 					cout << "\n\nPercentage of deposit: "; printf("%.2f", PDPT); cout << "%";
 					cout << "\nPercentage of expenses: "; printf("%.2f", PEPS); cout << "%";
-					cout << "\nTotal budget amount: RM "; printf("%.2f", TBA);
+
 					_getch();
 					break;
-				}
-				else
-				{
-					cout << "Invalid year or month. Please enter a valid year (four digits) and month (1-12)." << endl;
-					cout << "Please enter year and month again !" << endl;;
 				}
 			}
 			break;
@@ -2064,8 +2342,25 @@ void graph(string UserId)
 
 			while (1)
 			{
-				cout << "Enter first year: ";
-				cin >> a;
+				try {
+					// Prompt user for year input
+					cout << "\nEnter first year: ";
+					cin >> a;
+
+					// Check if input failed or not a four-digit integer
+					if (cin.fail() || a < 1000 || a > 9999) {
+						throw invalid_argument(RED"Invalid input for year! Please enter a four-digit integer." RESET);
+					}
+				}
+				catch (const invalid_argument& e) {
+					// Catch the exception and display the error message
+					cout << e.what() << endl;
+
+					// Clear error state to allow new input
+					cin.clear(); // Clear error state
+					cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+				}
+
 				if (isValidYear(to_string(a)))
 				{
 					YOE = 0;
@@ -2073,13 +2368,9 @@ void graph(string UserId)
 					YOB = 0;
 					yearOfDeposit = Transaction::totalDepositInYear(UserId, a);
 					yearOfExpenses = Transaction::totalExpensesInYear(UserId, a);
-					yearOfBudget = Transaction::budgetRemainderYear(UserId, to_string(a));
+					yearOfNetTransaction = yearOfDeposit - yearOfExpenses;
 					break;
-				}
-				else
-				{
-					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range for first year." << endl;
-					cout << "Please enter first year again! " << endl;
+					//budgetRemainderYear()...
 				}
 			}
 
@@ -2173,75 +2464,86 @@ void graph(string UserId)
 			}
 			stars = "";
 
-			if (yearOfBudget > 0 && yearOfBudget <= 10000)
+			if (yearOfNetTransaction > 0 && yearOfNetTransaction <= 10000)
 			{
 				YOB = 100;
-				number8 = static_cast<int>(yearOfBudget / YOB);
+				number8 = static_cast<int>(yearOfNetTransaction / YOB);
 				for (int i = 0; i < number8; i++)
 				{
 					stars += "*";
 				}
-				Budget1 += stars;
+				NetTrans1 += stars;
 			}
-			else if (yearOfBudget < 0)
+			else if (yearOfNetTransaction < 0)
 			{
 				YOB = 100;
-				number8 = static_cast<int>(BGT / YOB);
+				number8 = static_cast<int>(yearOfNetTransaction / YOB);
 				CHGPTV1 = abs(number8);
 				for (int i = 0; i < CHGPTV1; i++)
 				{
 					stars += "*";
 				}
-				Budget1 += stars;
+				NetTrans1 += stars;
 			}
-			else if (yearOfBudget > 10000 && yearOfBudget <= 50000)
+			else if (yearOfNetTransaction > 10000 && yearOfNetTransaction <= 50000)
 			{
 				YOB = 500;
-				number8 = static_cast<int>(yearOfBudget / YOB);
+				number8 = static_cast<int>(yearOfNetTransaction / YOB);
 				for (int i = 0; i < number8; i++)
 				{
 					stars += "*";
 				}
-				Budget1 += stars;
+				NetTrans1 += stars;
 			}
-			else if (yearOfBudget > 50000 && yearOfBudget <= 250000)
+			else if (yearOfNetTransaction > 50000 && yearOfNetTransaction <= 250000)
 			{
 				YOB = 2500;
-				number8 = static_cast<int>(yearOfBudget / YOB);
+				number8 = static_cast<int>(yearOfNetTransaction / YOB);
 				for (int i = 0; i < number8; i++)
 				{
 					stars += "*";
 				}
-				Budget1 += stars;
+				NetTrans1 += stars;
 			}
-			else if (yearOfBudget > 250000)
+			else if (yearOfNetTransaction > 250000)
 			{
 				YOB = 5000;
-				number8 = static_cast<int>(yearOfBudget / YOB);
+				number8 = static_cast<int>(yearOfNetTransaction / YOB);
 				for (int i = 0; i < number8; i++)
 				{
 					stars += "*";
 				}
-				Budget1 += stars;
+				NetTrans1 += stars;
 			}
 
 			while (1)
 			{
-				cout << "Enter second year: ";
-				cin >> b;
+				try {
+					// Prompt user for year input
+					cout << "\nEnter second year: ";
+					cin >> b;
+
+					// Check if input failed or not a four-digit integer
+					if (cin.fail() || b < 1000 || b > 9999) {
+						throw invalid_argument(RED"Invalid input for year! Please enter a four-digit integer." RESET);
+					}
+				}
+				catch (const invalid_argument& e) {
+					// Catch the exception and display the error message
+					cout << e.what() << endl;
+
+					// Clear error state to allow new input
+					cin.clear(); // Clear error state
+					cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard input
+				}
 				if (isValidYear(to_string(b)))
 				{
 					YOD1 = 0;
 					YOE1 = 0;
 					yearOfDeposit1 = Transaction::totalDepositInYear(UserId, b);
 					yearOfExpenses1 = Transaction::totalExpensesInYear(UserId, b);
-					yearOfBudget1 = Transaction::budgetRemainderYear(UserId, to_string(b));
+					yearOfNetTransaction1 = yearOfDeposit1 - yearOfExpenses1;
 					break;
-				}
-				else
-				{
-					cout << "Invalid year. Please enter a valid four-digit year within a reasonable range." << endl;
-					cout << "Please enter second year again! " << endl;
 				}
 			}
 
@@ -2335,120 +2637,130 @@ void graph(string UserId)
 			}
 			stars = "";
 
-			if (yearOfBudget1 > 0 && yearOfBudget1 <= 10000)
+			if (yearOfNetTransaction1 > 0 && yearOfNetTransaction1 <= 10000)
 			{
 				YOB1 = 100;
-				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				number9 = static_cast<int>(yearOfNetTransaction1 / YOB1);
 				for (int i = 0; i < number9; i++)
 				{
 					stars += "*";
 				}
-				Budget2 += stars;
+				NetTrans2 += stars;
 			}
-			else if (yearOfBudget1 < 0)
+			else if (yearOfNetTransaction1 < 0)
 			{
 				YOB1 = 100;
-				number9 = static_cast<int>(BGT / YOB1);
-				CHGPTV1 = abs(number9);
-				for (int i = 0; i < CHGPTV1; i++)
+				number9 = static_cast<int>(yearOfNetTransaction1 / YOB1);
+				CHGPTV2 = abs(number9);
+				for (int i = 0; i < CHGPTV2; i++)
 				{
 					stars += "*";
 				}
-				Budget2 += stars;
+				NetTrans2 += stars;
 			}
-			else if (yearOfBudget1 > 10000 && yearOfBudget1 <= 50000)
+			else if (yearOfNetTransaction1 > 10000 && yearOfNetTransaction1 <= 50000)
 			{
 				YOB1 = 500;
-				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				number9 = static_cast<int>(yearOfNetTransaction1 / YOB1);
 				for (int i = 0; i < number9; i++)
 				{
 					stars += "*";
 				}
-				Budget2 += stars;
+				NetTrans2 += stars;
 			}
-			else if (yearOfBudget1 > 50000 && yearOfBudget1 <= 250000)
+			else if (yearOfNetTransaction1 > 50000 && yearOfNetTransaction1 <= 250000)
 			{
 				YOB1 = 2500;
-				number9 = static_cast<int>(yearOfBudget1 / YOB1);
+				number9 = static_cast<int>(yearOfNetTransaction1 / YOB1);
 				for (int i = 0; i < number9; i++)
 				{
 					stars += "*";
 				}
-				Budget2 += stars;
+				NetTrans2 += stars;
 			}
-			else if (yearOfBudget1 > 250000)
+			else if (yearOfNetTransaction1 > 250000)
 			{
 				YOB1 = 5000;
-				number9 = static_cast<int>(yearOfBudget / YOB1);
+				number9 = static_cast<int>(yearOfNetTransaction1 / YOB1);
 				for (int i = 0; i < number9; i++)
 				{
 					stars += "*";
 				}
-				Budget2 += stars;
+				NetTrans2 += stars;
 			}
 
+			//Calculate percentage between deposit and expenses
 			PDPT1 = (yearOfDeposit / (yearOfDeposit + yearOfExpenses)) * 100;
 			PEPS1 = (yearOfExpenses / (yearOfDeposit + yearOfExpenses)) * 100;
 			PDPT2 = (yearOfDeposit1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
 			PEPS2 = (yearOfExpenses1 / (yearOfDeposit1 + yearOfExpenses1)) * 100;
+
+			//calaculate precentage of deposit/expenses/net transaction amount between two years
 			PBTY = (yearOfDeposit / (yearOfDeposit + yearOfDeposit1)) * 100;
 			PBTY1 = (yearOfDeposit1 / (yearOfDeposit + yearOfDeposit1)) * 100;
 			PBTY2 = (yearOfExpenses / (yearOfExpenses + yearOfExpenses1)) * 100;
 			PBTY3 = (yearOfExpenses1 / (yearOfExpenses + yearOfExpenses1)) * 100;
+			PBTY4 = (yearOfNetTransaction / (yearOfNetTransaction + yearOfNetTransaction1)) * 100;
+			PBTY5 = (yearOfNetTransaction1 / (yearOfNetTransaction + yearOfNetTransaction1)) * 100;
+
+			//calaculate precentage of deposit/expenses/net transaction amount compare  two years
 			PDBTY = ((yearOfDeposit - yearOfDeposit1) / yearOfDeposit) * 100;
 			PDBTY1 = ((yearOfDeposit1 - yearOfDeposit) / yearOfDeposit1) * 100;
 			PDBTY2 = ((yearOfExpenses - yearOfExpenses1) / yearOfExpenses) * 100;
 			PDBTY3 = ((yearOfExpenses1 - yearOfExpenses) / yearOfExpenses1) * 100;
+			PDBTY4 = ((yearOfNetTransaction - yearOfNetTransaction1) / yearOfNetTransaction) * 100;
+			PDBTY5 = ((yearOfNetTransaction1 - yearOfNetTransaction) / yearOfNetTransaction1) * 100;
+
+
 			Ave = ((yearOfDeposit + yearOfDeposit1) / 2);
 			Ave1 = ((yearOfExpenses + yearOfExpenses1) / 2);
-			TBA1 = yearOfBudget + yearOfExpenses;
-			TBA2 = yearOfBudget1 + yearOfExpenses1;
-
-			cout << "-------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " ------------------------------------------------------";
+			Ave2 = ((yearOfNetTransaction + yearOfNetTransaction1) / 2);
+			
+			cout << "-------------------------------------------------- " << YELLOW  "Years: " << a << "-" << b << RESET << " -----------------------------------------------------------";
 			cout << "\n\nYear: " << GREEN << a << RESET;
-			cout << "\nDeposit:          " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
-			cout << "\nExpenses:         " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
-			if (yearOfBudget < 0)
+			cout << "\nDeposit:                " << CYAN << Deposit1 << RESET << " "; printf("%.2f", yearOfDeposit);
+			cout << "\nExpenses:               " << CYAN << Expenses1 << RESET << " "; printf("%.2f", yearOfExpenses);
+			if (yearOfNetTransaction < 0)
 			{
-				cout << "\nBudget remainder: " << RED << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);
+				cout << "\nNet transaction amount: " << RED << NetTrans1 << RESET << "  "; printf("%.2f", yearOfNetTransaction);
 			}
 			else
 			{
-				cout << "\nBudget remainder: " << CYAN << Budget1 << RESET << "  "; printf("%.2f", yearOfBudget);
+				cout << "\nNet transaction amount: " << CYAN << NetTrans1 << RESET << "  "; printf("%.2f", yearOfNetTransaction);
 			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE << RESET;
-			if (yearOfBudget < 0)
+			if (yearOfNetTransaction < 0)
 			{
-				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB << RESET;
+				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®net transaction amount¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB << RESET;
 			}
 			else
 			{
-				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB << RESET;
+				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®net transaction amount¡¯" << RESET << " means" << GREEN << " RM " << YOB << RESET;
 			}
 			cout << endl;
 
 			cout << "\n";
 			cout << "\nYear: " << GREEN << b << RESET;
-			cout << "\nDeposit:          " << CYAN << Deposit2 << RESET << " "; printf("%.2f", yearOfDeposit1);
-			cout << "\nExpenses:         " << CYAN << Expenses2 << RESET << " "; printf("%.2f", yearOfExpenses1);
-			if (yearOfBudget1 < 0)
+			cout << "\nDeposit:                " << CYAN << Deposit2 << RESET << " "; printf("%.2f", yearOfDeposit1);
+			cout << "\nExpenses:               " << CYAN << Expenses2 << RESET << " "; printf("%.2f", yearOfExpenses1);
+			if (yearOfNetTransaction1 < 0)
 			{
-				cout << "\nBudget remainder: " << RED << Budget2 << RESET << "  "; printf("%.2f", yearOfBudget1);
+				cout << "\nNet transaction amount: " << RED << NetTrans2 << RESET << "  "; printf("%.2f", yearOfNetTransaction1);
 			}
 			else
 			{
-				cout << "\nBudget remainder: " << CYAN << Budget2 << RESET << "  "; printf("%.2f", yearOfBudget1);
+				cout << "\nNet transaction amount: " << CYAN << NetTrans2 << RESET << "  "; printf("%.2f", yearOfNetTransaction1);
 			}
 			cout << "\n\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®deposit¡¯" << RESET << " means" << GREEN << " RM " << YOD1 << RESET;
 			cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®expenses¡¯" << RESET << " means" << GREEN << " RM " << YOE1 << RESET;
-			if (yearOfBudget1 < 0)
+			if (yearOfNetTransaction1 < 0)
 			{
-				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB1 << RESET;
+				cout << "\nOne" << RED << " '*' " << RESET << "for " << BLUE << "¡®net transaction amount¡¯" << RESET << " means negative value" << GREEN << " RM " << YOB1 << RESET;
 			}
 			else
 			{
-				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®budget remainder¡¯" << RESET << " means" << GREEN << " RM " << YOB1 << RESET;
+				cout << "\nOne" << CYAN << " '*' " << RESET << "for " << BLUE << "¡®net transaction amount¡¯" << RESET << " means" << GREEN << " RM " << YOB1 << RESET;
 			}
 			cout << endl;
 			cout << "\n_______________________________________________________________________________________________";
@@ -2456,12 +2768,13 @@ void graph(string UserId)
 			cout << "\n_______________________________________________________________________________________________";
 			cout << "\nPercentage of deposit in " << a << ": "; printf("%.2f", PDPT1); cout << "%";
 			cout << "\nPercentage of expenses in " << a << ": "; printf("%.2f", PEPS1); cout << "%";
-			cout << "\nTotal budget amount in " << a << " :RM "; printf("% .2f", TBA1);
+			
 			cout << "\n\nPercentage of deposit in " << b << ": "; printf("%.2f", PDPT2); cout << "%";
 			cout << "\nPercentage of expenses in " << b << ": "; printf("%.2f", PEPS2); cout << "%";
-			cout << "\nTotal budget amount in " << b << " :RM "; printf("% .2f", TBA2);
+			
 			cout << "\n\nAverage of deposit for both years: ";  printf("%.2f", Ave);
 			cout << "\nAverage of expenses for both years: ";  printf("%.2f", Ave1);
+			cout << "\nAverage of net transaction amount for both years: ";  printf("%.2f", Ave2);
 
 
 			if (yearOfDeposit > yearOfDeposit1)
@@ -2496,6 +2809,23 @@ void graph(string UserId)
 				cout << "\nPercentage of expenses in " << b << " is "; printf("%.2f", PBTY3); cout << "%";
 				cout << "\nPercentage of expenses in " << b << " more than " << a << " is "; printf("%.2f", PDBTY3); cout << "%";
 			}
+			if (yearOfNetTransaction > yearOfNetTransaction1)
+			{
+				cout << endl << endl;
+				cout << a << " has higher net transaction amount than " << b;
+				cout << "\nPercentage of net transaction amount in " << a << " is "; printf("%.2f", PBTY4); cout << "%";
+				cout << "\nPercentage of net transaction amount in " << b << " is "; printf("%.2f", PBTY5); cout << "%";
+				cout << "\nPercentage of net transaction amount in " << a << " more than " << b << " is "; printf("%.2f", PDBTY4); cout << "%";
+			}
+			else
+			{
+				cout << endl << endl;
+				cout << b << " has higher net transaction amount than " << a;
+				cout << "\nPercentage of net transaction amount in " << a << " is "; printf("%.2f", PBTY4); cout << "%";
+				cout << "\nPercentage of net transaction amount in " << b << " is "; printf("%.2f", PBTY5); cout << "%";
+				cout << "\nPercentage of net transaction amount in " << b << " more than " << a << " is "; printf("%.2f", PDBTY5); cout << "%";
+			}
+
 			_getch();
 			break;
 		case 3:

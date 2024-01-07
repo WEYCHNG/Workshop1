@@ -29,8 +29,7 @@ public:
     static double totalExpenses(string UserID, int x, int y);
 	static double totalDepositInYear(string UserID, int a);
 	static double totalExpensesInYear(string UserID, int a);
-	static double budgetRemainder(string UserID, string b,string c);
-	static double budgetRemainderYear(string UserID, string d);
+
 	~Transaction();
 };
 

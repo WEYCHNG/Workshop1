@@ -214,8 +214,7 @@ double Transaction::totalDeposit(string UserId,int x,int y)
 		"SUM(CASE WHEN MONTH(transaction_date) = ? AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in "
 		"FROM transaction JOIN account USING(AccountID) "
 		"WHERE UserID = ? AND YEAR(transaction_date) = ? AND MONTH(transaction_date) = ? "
-		"GROUP BY MONTH(transaction_date) "
-		"ORDER BY MONTH(transaction_date) ASC;");
+		"GROUP BY MONTH(transaction_date);");
 	db.stmt->setInt(1, x); // Replace x with the month number you want to query (e.g., 1 for January)
 	db.stmt->setString(2, UserId); // Assuming UserId is a string parameter
 	db.stmt->setInt(3, y); // Replace y with the year you want to query (e.g., 2023)
@@ -239,8 +238,7 @@ double Transaction::totalExpenses(string UserId, int x, int y)
 		"SUM(CASE WHEN MONTH(transaction_date) = ? AND transaction_type = 'Expenses' THEN transaction_amount ELSE 0 END) AS transfer_out "
 		"FROM transaction JOIN account USING(AccountID) "
 		"WHERE UserID = ? AND YEAR(transaction_date) = ? AND MONTH(transaction_date) = ? "
-		"GROUP BY MONTH(transaction_date) "
-		"ORDER BY MONTH(transaction_date) ASC;");
+		"GROUP BY MONTH(transaction_date);");
 	db.stmt->setInt(1, x); // Replace x with the same month number for expenses
 	db.stmt->setString(2, UserId); // Assuming UserId is a string parameter
 	db.stmt->setInt(3, y); // Replace y with the year you want to query (e.g., 2023)
@@ -264,7 +262,7 @@ double Transaction::totalDepositInYear(string UserId, int a)
 	db.prepareStatement("SELECT YEAR(transaction_date) AS year, "
 		"SUM(CASE WHEN YEAR(transaction_date) = ? AND transaction_type = 'Deposit' THEN transaction_amount ELSE 0 END) AS transfer_in_year "
 		"FROM transaction JOIN account USING(AccountID) WHERE UserID = ? AND YEAR(transaction_date) = ? "
-		"GROUP BY YEAR(transaction_date) ORDER BY YEAR(transaction_date) ASC;");
+		"GROUP BY YEAR(transaction_date);");
 
 	db.stmt->setInt(1, a); 
 	db.stmt->setString(2, UserId); 
@@ -305,41 +303,4 @@ double Transaction::totalExpensesInYear(string UserId, int a)
 	return yearOfExpenses;
 }
 
-double Transaction::budgetRemainder(string UserId, string b,string c)
-{
-	DBConnection db;
-	double budgetremainder = 0;
-	db.prepareStatement("SELECT SUM(budget_amount) AS budget_remainder FROM account WHERE UserID=? AND start_date LIKE ?; ");
-	db.stmt->setString(1, UserId);
-	db.stmt->setString(2, "%" + b + "-" + c + "%");
-
-	db.QueryResult();
-	if (db.res->rowsCount() > 0) {
-		while (db.res->next())
-		{
-			budgetremainder = db.res->getDouble("budget_remainder");
-		}
-	}
-	db.~DBConnection();
-	return budgetremainder;
-}
-
-double Transaction::budgetRemainderYear(string UserId, string d)
-{
-	DBConnection db;
-	double budgetremainder = 0;
-	db.prepareStatement("SELECT SUM(budget_amount) AS budget_remainder FROM account WHERE UserID=? AND start_date LIKE ?; ");
-	db.stmt->setString(1, UserId);
-	db.stmt->setString(2, "%" + d + "%");//any length containing d;
-
-	db.QueryResult();
-	if (db.res->rowsCount() > 0) {
-		while (db.res->next())
-		{
-			budgetremainder = db.res->getDouble("budget_remainder");
-		}
-	}
-	db.~DBConnection();
-	return budgetremainder;
-}
 Transaction::~Transaction() {}
