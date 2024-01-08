@@ -156,12 +156,12 @@ bool isValidPassword(const string& password) {
 		_getch();
 		return false;
 	}
-	if (!std::regex_search(password, digit)) {
+	if (!regex_search(password, digit)) {
 		cout << RED"\n\t\tPassword must contain at least one digit." RESET<< endl;
 		_getch();
 		return false;
 	}
-	if (!std::regex_search(password, special)) {
+	if (!regex_search(password, special)) {
 		cout << RED"\n\t\tPassword must contain at least one special character." RESET << endl;
 		_getch();
 		return false;
@@ -176,7 +176,7 @@ bool isValidEmail(const string& email) {
 	regex pattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
 
 	// Check if the email matches the pattern
-	return std::regex_match(email, pattern);
+	return regex_match(email, pattern);
 }
 
 //LOGIN PAGE
@@ -242,7 +242,7 @@ void registerAccount() {
 				cnMenu.setValue(2, newacc.last_name);
 			}
 			else {
-				std::cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
+				cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
 				_getch();
 			}	
 			break;
@@ -259,7 +259,7 @@ void registerAccount() {
 				cnMenu.setValue(3, newacc.password);
 			}
 			else {
-				cout << RED"\n\t\tInvalid password." RESET << std::endl;
+				cout << RED"\n\t\tInvalid password." RESET << endl;
 				_getch();
 			}
 			break;
@@ -276,7 +276,8 @@ void registerAccount() {
 				cnMenu.setValue(4, newacc.email);
 			}
 			else {
-				cout << RED"\n\t\tInvalid email address." RESET << std::endl;
+				cout << RED"\n\t\tInvalid email address." RESET << endl;
+				_getch();
 			}
 			cnMenu.setValue(4, newacc.email);
 			break;
@@ -298,7 +299,8 @@ void registerAccount() {
 				{
 					break;
 				}
-				cout << "Phone Number should contain only 10 to 11 digits. \nPlease enter again: ";
+				cout << RED"\n\t\tPhone Number should contain only 10 to 11 digits." RESET;
+				_getch();
 			}
 			cnMenu.setValue(5, newacc.phone_number);
 			break;
@@ -306,6 +308,7 @@ void registerAccount() {
 			if (newacc.UserId.empty() || newacc.first_name.empty() || newacc.last_name.empty() || newacc.password.empty() || newacc.phone_number.empty() || newacc.email.empty())
 			{
 				cout << RED"\n\t\tRegistration details is not completed. Please complete it." << RESET;
+				_getch();
 			}
 			else 
 			{
@@ -478,7 +481,7 @@ User profile(User user) {
 				profileMenu.setValue(0, temp.first_name);
 			}
 			else {
-				std::cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET << endl;
+				cout << RED"\n\t\tInvalid first name. Please enter only alphabetic characters." RESET << endl;
 				temp.first_name = firstName;
 				_getch();
 			}
@@ -496,7 +499,7 @@ User profile(User user) {
 				
 			}
 			else {
-				std::cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
+				cout << RED"\n\t\tInvalid last name. Please enter only alphabetic characters." RESET << endl;
 				temp.last_name = lastName;
 				_getch();
 			}
@@ -510,7 +513,7 @@ User profile(User user) {
 				profileMenu.setValue(3, temp.password);
 			}
 			else {
-				cout << RED"\n\t\tInvalid password." RESET << std::endl;
+				cout << RED"\n\t\tInvalid password." RESET << endl;
 				_getch();
 			}
 			break;
@@ -700,7 +703,7 @@ string formatAmount(double amount) {
 
 //compare insert month and year with current month and year
 bool isValidFutureMonth(const string& insertedMonth, const int insertedYear) {
-	std::map<std::string, int> monthMap = {
+	map<string, int> monthMap = {
 		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
 		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
 		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
@@ -773,7 +776,7 @@ void newAccount(string UserId)
 		switch (accountMenu.prompt())
 		{
 		case 1:
-			cout << "Eneter account name (Example: RHB Bank): ";
+			cout << "Eneter account name (e.g.: RHB Bank): ";
 			getline(cin, addAccount.account_name);
 			if (addAccount.account_name.empty())
 			{
@@ -829,7 +832,7 @@ void newAccount(string UserId)
 					}
 
 					// Prompt user for year input
-					cout << "Enter year (Example: 2023, 2024...): ";
+					cout << "Enter year (e.g.: 2023, 2024...): ";
 					cin >> insertedYear;
 
 					// Check if input failed or not a four-digit integer
@@ -954,7 +957,7 @@ void newAccount(string UserId)
 						}
 
 						// Prompt user for year input
-						cout << "Enter year (Example: 2023, 2024...): ";
+						cout << "Enter year (e.g.: 2023, 2024...): ";
 						cin >> insertedYear1;
 
 						// Check if input failed or not a four-digit integer
@@ -962,7 +965,7 @@ void newAccount(string UserId)
 							throw invalid_argument(RED"\t\tInvalid input for year! Please enter a four-digit integer." RESET);
 						}
 					}
-					catch (const std::invalid_argument& e) {
+					catch (const invalid_argument& e) {
 						// Catch the exception and display the error message
 						cout << e.what() << endl;
 
@@ -1153,11 +1156,11 @@ void modifyAccountPage(string confirmation,string UserId)
 //To get month of abbreviation
 string getMonthAbbreviation(const string& dateStr) {
 	// Months abbreviation array
-	const std::string months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	const string months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 								  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 	// Extract month abbreviation (e.g., "Dec" from "12-Dec-2023")
-	std::string extractedMonth = dateStr.substr(3, 3); // Assuming the month abbreviation is always at positions 3-5
+	string extractedMonth = dateStr.substr(3, 3); // Assuming the month abbreviation is always at positions 3-5
 
 	return extractedMonth;
 }
@@ -1170,7 +1173,7 @@ int getYear(const string& dateStr) {
 	getline(iss, day, '-');
 	getline(iss, month, '-');
 	getline(iss, year, '-');
-	return std::stoi(year);
+	return stoi(year);
 }
 
 //2)Modify account
@@ -1216,7 +1219,7 @@ void modifyAccount(Account account,string UserID)
 		switch (modifyAccMenu.prompt())
 		{
 		case 1:
-			cout << "Eneter new account name (Example: RHB Bank): ";
+			cout << "Eneter new account name (e.g.: RHB Bank): ";
 			getline(cin, temp.account_name);
 			if (temp.account_name.empty())
 			{
@@ -1270,7 +1273,7 @@ void modifyAccount(Account account,string UserID)
 					}
 
 					// Prompt user for year input
-					cout << "Enter year (Example: 2023, 2024...): ";
+					cout << "Enter year (e.g.: 2023, 2024...): ";
 					cin >> insertedYear1;
 
 					// Check if input failed or not a four-digit integer
@@ -1278,7 +1281,7 @@ void modifyAccount(Account account,string UserID)
 						throw invalid_argument(RED"\t\tInvalid input for year! Please enter a four-digit integer." RESET);
 					}
 				}
-				catch (const std::invalid_argument& e) {
+				catch (const invalid_argument& e) {
 					// Catch the exception and display the error message
 					cout << e.what() << endl;
 
@@ -1419,7 +1422,7 @@ void TransactionPage(string UserId)
 
 //To compare end_date with current_current date
 bool endDateWithCurrentDate(const string& startMonth, int startYear, const string& endMonth, int endYear) {
-	std::map<std::string, int> monthMap = {
+	map<string, int> monthMap = {
 		{"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4},
 		{"May", 5}, {"Jun", 6}, {"Jul", 7}, {"Aug", 8},
 		{"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
@@ -1523,7 +1526,7 @@ void newTrans(string UserID, string account_name)
 			homeTrans.setValue(2, formattedTransAmount);
 			break;
 		case 4:
-			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
+			cout << "Enter category (e.g.: Food & Beverage, Transportation, Bills): ";
 			getline(cin,addTrans.category);
 			if (addTrans.category.empty())
 			{
@@ -1592,7 +1595,7 @@ void newTrans(string UserID, string account_name)
 			}
 			else 
 			{
-				cout << RED"\n\t\tThe end date is in the past. Please change end date first!" << RESET << endl;
+				cout << RED"\n\t\tCannot add transaction. The transaction date is not in the range between start date and end date" << RESET << endl;
 				_getch();
 			}
 			break;
@@ -1834,7 +1837,7 @@ void modifyTrans(Transaction transaction,string UserId)
 			}
 			break;
 		case 3:
-			cout << "Enter category (Example: Food & Beverage, Transportation, Bills): ";
+			cout << "Enter category (e.g.: Food & Beverage, Transportation, Bills): ";
 			getline(cin, temp.category);
 			if (temp.category.empty())
 			{
@@ -1992,7 +1995,7 @@ bool isValidYear(const string& input) {
 	}
 
 	// Convert the input to an integer
-	int year = std::stoi(input);
+	int year = stoi(input);
 
 	// Check if the year is a four-digit number
 	if (input.length() != 4 || year < 0) {
@@ -2000,8 +2003,8 @@ bool isValidYear(const string& input) {
 	}
 
 	// Get the current year
-	std::time_t currentTime = std::time(nullptr);
-	std::tm currentTimeStruct;
+	time_t currentTime = time(nullptr);
+	tm currentTimeStruct;
 	localtime_s(&currentTimeStruct, &currentTime);
 	const int currentYear = currentTimeStruct.tm_year + 1900;
 
@@ -2029,8 +2032,8 @@ bool isValidYearAndMonth(const string& yearInput, const string& monthInput) {
 	}
 
 	// Convert year and month inputs to integers
-	int year = std::stoi(yearInput);
-	int month = std::stoi(monthInput);
+	int year = stoi(yearInput);
+	int month = stoi(monthInput);
 
 	// Check if the year is a four-digit number and the month is within range (1 to 12)
 	if (yearInput.length() != 4 || year < 0 || month < 1 || month > 12) {
@@ -2038,8 +2041,8 @@ bool isValidYearAndMonth(const string& yearInput, const string& monthInput) {
 	}
 
 	// Get the current year and month
-	std::time_t currentTime = std::time(nullptr);
-	std::tm currentTimeStruct;
+	time_t currentTime = time(nullptr);
+	tm currentTimeStruct;
 	localtime_s(&currentTimeStruct, &currentTime);
 	const int currentYear = currentTimeStruct.tm_year + 1900;
 	const int currentMonth = currentTimeStruct.tm_mon + 1; // Adding 1 because tm_mon is zero-based
@@ -2085,7 +2088,7 @@ void graph(string UserId)
 					}
 
 					// Prompt user for year input
-					cout << "\nEnter year (Example: 2023, 2024...): ";
+					cout << "\nEnter year (e.g.: 2023, 2024...): ";
 					cin >> y;
 
 					// Check if input failed or not a four-digit integer
@@ -2095,7 +2098,7 @@ void graph(string UserId)
 				}
 				catch (const invalid_argument& e) {
 					// Catch the exception and display the error message
-					cout << e.what() << std::endl;
+					cout << e.what() << endl;
 
 					// Clear error state to allow new input
 					cin.clear(); // Clear error state
