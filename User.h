@@ -14,7 +14,6 @@ public://access specifier
 	bool login();
 	void insert();
 	void update();
-	void remove();
 
 	~User(); //destructor method
 };

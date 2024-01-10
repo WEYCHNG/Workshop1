@@ -201,7 +201,7 @@ bool Account::confirmtoEdit(string UserID)
 void Account::getAccount(string UserID,string account_name)
 {
 	DBConnection db;
-	db.prepareStatement("SELECT AccountID,account_name,budget_amount,balance FROM account WHERE UserID=? AND account_name=?");
+	db.prepareStatement("SELECT AccountID,account_name,budget_remainder,balance FROM account WHERE UserID=? AND account_name=?");
 	db.stmt->setString(1, UserID);
 	db.stmt->setString(2, account_name);
 	db.QueryResult();
@@ -211,7 +211,7 @@ void Account::getAccount(string UserID,string account_name)
 			account_name = db.res->getString("account_name");
 			AccountID = db.res->getInt("AccountID");
 			balance = db.res->getDouble("balance");
-			budget_remainder = db.res->getDouble("budget_amount");
+			budget_remainder = db.res->getDouble("budget_remainder");
 		}
 		db.~DBConnection();
 	}

@@ -80,12 +80,5 @@ void User::update() {
 
 }
 
-void User::remove() {
-	DBConnection db;
-	db.prepareStatement("DELETE FROM user WHERE UserId=?");
-	db.stmt->setString(1, UserId);
-	db.QueryStatement();
-	db.~DBConnection();
-}
 
 User::~User() {}
